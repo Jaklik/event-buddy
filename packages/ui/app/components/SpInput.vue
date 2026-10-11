@@ -20,7 +20,7 @@ const props = withDefaults(
   }>(),
   { type: 'text', rows: 4 },
 )
-const model = defineModel<string>({ default: '' })
+const model = defineModel<string | number>({ default: '' })
 const id = useId()
 const describedBy = computed(() => [props.error ? `${id}-error` : '', props.hint ? `${id}-hint` : ''].filter(Boolean).join(' ') || undefined)
 </script>

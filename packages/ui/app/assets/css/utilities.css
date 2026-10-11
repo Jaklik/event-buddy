@@ -19,6 +19,7 @@
   gap: var(--sp-gutter);
   grid-template-columns: repeat(var(--sp-cols, 1), minmax(0, 1fr));
 }
+.sp-grid > * { min-width: 0; }
 .sp-grid--tight { gap: var(--sp-space-2); }
 .sp-grid--cols-2 { --sp-cols: 2; }
 .sp-grid--cols-3 { --sp-cols: 3; }

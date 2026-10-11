@@ -92,7 +92,7 @@ const allowed = computed(() => needed.value.includes(role.value))
 
 <style scoped>
 .panel-layout { min-height: 100vh; background: var(--sp-color-bg); }
-.panel-layout__body { display: grid; gap: var(--sp-space-4); padding-block: var(--sp-space-4); align-items: start; }
+.panel-layout__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-space-4); padding-block: var(--sp-space-4); align-items: start; }
 .panel-layout__main { min-width: 0; }
 .panel-layout__denied { padding-block: var(--sp-space-5); }
 @media (min-width: 992px) { .panel-layout__body { grid-template-columns: 16rem minmax(0, 1fr); } }

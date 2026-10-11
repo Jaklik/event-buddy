@@ -10,5 +10,11 @@
     "@iconify-json/fa6-solid": "^1.2.0",
     "@iconify-json/fa6-regular": "^1.2.0",
     "@iconify-json/fa6-brands": "^1.2.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "vue": "^3.5.0"
   }
 }

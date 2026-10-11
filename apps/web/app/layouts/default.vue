@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { categories, eventTypes } from '~/data/home'
 
+const config = useRuntimeConfig()
+const { role, loggedIn, displayName, logout } = useMockSession()
+
 // Main navigation per Homepage spec §3. All modules launch together (Migrace §1), so the full menu is the target state.
 const nav = [
   { label: 'Dodavatelé', to: '/dodavatele' },
@@ -10,6 +13,7 @@ const nav = [
   { label: 'Poradna', to: '/poradna' },
   { label: 'Pro dodavatele', to: '/pro-dodavatele' },
 ]
+const panelLink = computed(() => ({ guest: '/prihlaseni', customer: '/ucet', supplier: '/dodavatel', admin: '/admin' })[role.value])
 
 const footerColumns = [
   { title: 'Dodavatelé', links: categories.slice(0, 6).map((c) => ({ label: c.label, to: `/dodavatele?category=${c.code}` })) },
@@ -41,13 +45,20 @@ function openCookies() {
   <div class="layout">
     <SpHeader :items="nav">
       <template #actions>
-        <SpHeaderAction to="/prihlaseni" icon="fa6-regular:user">Přihlásit se</SpHeaderAction>
-        <SpHeaderAction to="/registrace" icon="fa6-regular:circle-user">Registrovat se</SpHeaderAction>
+        <template v-if="loggedIn">
+          <SpHeaderAction :to="panelLink" icon="fa6-regular:user">{{ displayName }}</SpHeaderAction>
+          <SpHeaderAction icon="fa6-solid:right-from-bracket" @click="logout(); navigateTo('/')">Odhlásit</SpHeaderAction>
+        </template>
+        <template v-else>
+          <SpHeaderAction to="/prihlaseni" icon="fa6-regular:user">Přihlásit se</SpHeaderAction>
+          <SpHeaderAction to="/registrace" icon="fa6-regular:circle-user">Registrovat se</SpHeaderAction>
+        </template>
       </template>
     </SpHeader>
     <main id="main" class="layout__main"><slot /></main>
     <SpFooterNav :columns="footerColumns" @cookies="openCookies" />
     <SpFooter copyright="© SelfPlan. Všechna práva vyhrazena." />
+    <DevRoleSwitcher v-if="config.public.mock" />
   </div>
 </template>
 

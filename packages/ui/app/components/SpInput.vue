@@ -27,13 +27,25 @@ const describedBy = computed(() => [props.error ? `${id}-error` : '', props.hint
 
 <template>
   <div class="sp-input" :class="{ 'sp-input--error': !!error, 'sp-input--multiline': multiline }">
-    <component
-      :is="multiline ? 'textarea' : 'input'"
+    <textarea
+      v-if="multiline"
       :id="id"
       v-model="model"
       class="sp-input__control"
-      :type="multiline ? undefined : type"
-      :rows="multiline ? rows : undefined"
+      :rows="rows"
+      :name="name"
+      :required="required"
+      :disabled="disabled"
+      :placeholder="placeholder ?? ' '"
+      :aria-invalid="error ? 'true' : undefined"
+      :aria-describedby="describedBy"
+    />
+    <input
+      v-else
+      :id="id"
+      v-model="model"
+      class="sp-input__control"
+      :type="type"
       :name="name"
       :required="required"
       :autocomplete="autocomplete"

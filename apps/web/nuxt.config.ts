@@ -6,6 +6,8 @@ export default defineNuxtConfig({
     public: {
       // Canonical production origin; override per environment with NUXT_PUBLIC_SITE_URL.
       siteUrl: 'https://www.selfplan.cz',
+      // Frontend-first phase: fake session + dummy data + role switcher. Turn off when the backend lands.
+      mock: true,
     },
   },
   app: {

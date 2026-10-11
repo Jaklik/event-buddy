@@ -15,7 +15,11 @@ defineProps<{
   rating?: number
   ratingCount?: number
   sponsored?: boolean
+  vip?: boolean
   favorite?: boolean
+  availability?: 'free' | 'busy' | 'unknown' | null
+  priceLevel?: string | null
+  capacity?: { min: number; max: number }
 }>()
 const emit = defineEmits<{ toggleFavorite: [] }>()
 </script>
@@ -39,10 +43,16 @@ const emit = defineEmits<{ toggleFavorite: [] }>()
       <div class="sp-supplier-card__body">
         <div class="sp-supplier-card__meta">
           <SpBadge v-if="category">{{ category }}</SpBadge>
+          <SpBadge v-if="vip" variant="neutral">VIP</SpBadge>
           <span v-if="sponsored" class="sp-supplier-card__sponsored">Sponzorováno</span>
+          <SpAvailabilityBadge v-if="availability" :state="availability" class="sp-supplier-card__avail" />
         </div>
         <SpHeading :level="2" as="h3" class="sp-supplier-card__title">{{ name }}</SpHeading>
         <p v-if="summary" class="sp-supplier-card__text">{{ summary }}</p>
+        <p v-if="capacity || priceLevel" class="sp-supplier-card__facts">
+          <span v-if="capacity"><SpIcon name="fa6-solid:users" /> {{ capacity.min }}–{{ capacity.max }} osob</span>
+          <span v-if="priceLevel" :title="'Cenová úroveň dle modelové zakázky'"><SpIcon name="fa6-solid:tag" /> {{ priceLevel }}</span>
+        </p>
       </div>
 
       <div class="sp-supplier-card__footer">
@@ -74,6 +84,9 @@ const emit = defineEmits<{ toggleFavorite: [] }>()
 .sp-supplier-card__meta { display: flex; align-items: center; gap: var(--sp-space-2); margin-bottom: var(--sp-space-2); min-height: 1.5rem; }
 .sp-supplier-card__sponsored { font-size: var(--sp-text-xs); color: var(--sp-color-text-secondary); }
 .sp-supplier-card__title { margin-bottom: var(--sp-space-2); }
+.sp-supplier-card__meta { flex-wrap: wrap; }
+.sp-supplier-card__avail { margin-left: auto; }
+.sp-supplier-card__facts { display: flex; flex-wrap: wrap; gap: var(--sp-space-3); margin: var(--sp-space-2) 0 0; font-size: var(--sp-text-sm); color: var(--sp-color-text-secondary); }
 .sp-supplier-card__text { margin: 0 0 auto; color: var(--sp-color-text-secondary); }
 .sp-supplier-card__footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--sp-space-2); padding: var(--sp-space-3); border-top: 1px dashed var(--sp-color-line); font-size: var(--sp-text-sm); }
 .sp-supplier-card__rating { display: inline-flex; align-items: center; gap: var(--sp-space-1); }

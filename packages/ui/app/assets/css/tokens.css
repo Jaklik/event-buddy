@@ -1,0 +1,153 @@
+/*
+ * SelfPlan design tokens.
+ *
+ * Source of truth: the original Rails app (colors.scss, typography.scss, btn.scss,
+ * form.scss, components/*.scss) documented in event-buddy/project/design-system.md.
+ * Values are carried over 1:1. Deviations are marked "NEW" and are intentionally few:
+ *   - --sp-color-on-brand: dark text for the beige brand surfaces (white on #E2CEBB is ~1.5:1,
+ *     fails WCAG 2.2 AA). Set it to #fff to restore the original look.
+ *   - tokens that were hard-coded in the old SCSS now have names.
+ *
+ * Naming: --sp-<group>-<name>. Components consume tokens only, never raw values.
+ */
+:root {
+  /* ---------- Color: brand & action ---------- */
+  --sp-color-primary: hsl(212 29% 44%);          /* #506E92  CTA, links in header, primary actions */
+  --sp-color-primary-hover: hsl(212 29% 36%);    /* #415A76  hover of primary */
+  --sp-color-brand: hsl(29 40% 81%);             /* #E2CEBB  stars, brand button, switch, alert-star */
+  --sp-color-brand-hover: hsl(29 40% 70%);       /* #D1B194  hover of brand */
+  --sp-color-brand-soft: hsl(29 41% 86%);        /* #EADBCD  badge background, big icons, calendar event */
+  --sp-color-brand-strong: hsl(28 41% 40%);      /* #906339  text on soft brand, hero eyebrow */
+  --sp-color-brand-gradient-from: rgb(226 205 186 / 0.6);
+  --sp-color-brand-gradient-to: rgb(249 245 241 / 0.6);
+  --sp-color-brand-deep: #e2cdba;                /* bottom of the auth billboard gradient */
+  --sp-color-on-primary: #fff;
+  --sp-color-on-brand: #4a2f1a;                  /* NEW: readable text on --sp-color-brand (~9:1) */
+
+  /* ---------- Color: text ---------- */
+  --sp-color-text: #212529;                      /* Bootstrap body color the old app inherited */
+  --sp-color-text-strong: #000;                  /* explicit black used by headings, links, buttons */
+  --sp-color-text-secondary: hsl(208 13% 45%);   /* #647482 */
+  --sp-color-text-muted: hsl(210 13% 62%);       /* #919EAB label, placeholder, disabled */
+  --sp-color-text-warm: #6b4423;                 /* links on the warm cookie bar */
+  --sp-color-text-warm-hover: #4a2f1a;
+  --sp-color-text-brown: #90633c;                /* Common__brown */
+
+  /* ---------- Color: surfaces & lines ---------- */
+  --sp-color-bg: #fff;
+  --sp-color-bg-neutral: hsl(210 22% 96%);       /* #F5F7FA */
+  --sp-color-bg-warm: hsl(30 40% 96%);           /* #F9F5F1 */
+  --sp-color-bg-warm-strong: #efe3d8;            /* cookie bar */
+  --sp-color-bg-input: rgb(145 158 171 / 0.08);
+  --sp-color-bg-input-focus: rgb(145 158 171 / 0.12);
+  --sp-color-bg-subtle: #f8f9fa;
+  --sp-color-bg-hover: #f0f0f0;
+  --sp-color-line: rgb(146 158 171 / 0.16);
+  --sp-color-line-strong: hsl(210 13% 62% / 0.32);
+  --sp-color-pipe: hsl(210 13% 62% / 0.16);
+  --sp-color-border: #dee2e6;
+  --sp-color-overlay: rgb(0 0 0 / 0.5);
+  --sp-color-logo: #1f2835;
+
+  /* ---------- Color: status ---------- */
+  --sp-color-success: #189518;
+  --sp-color-danger: #c71e1e;
+  --sp-color-warning: #b86e00;                   /* NEW: AA-safe text/icon color for warnings */
+  --sp-color-warning-bg: #fff3cd;
+  --sp-color-success-bg: #e6f4e6;
+  --sp-color-danger-bg: #fbe9e9;
+  --sp-color-info-bg: var(--sp-color-bg-neutral);
+  --sp-color-star: #f39c12;                      /* form rating */
+  --sp-color-star-off: #ccc;
+
+  /* ---------- Neutral scale (Bootstrap greys the old UI used) ---------- */
+  --sp-gray-100: #f8f9fa;
+  --sp-gray-200: #e9ecef;
+  --sp-gray-300: #dee2e6;
+  --sp-gray-500: #6c757d;
+  --sp-gray-700: #495057;
+  --sp-gray-800: #333;
+
+  /* ---------- Typography ---------- */
+  --sp-font-body: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --sp-font-heading: 'Barlow', 'Public Sans', sans-serif;
+  --sp-font-weight-light: 300;
+  --sp-font-weight-regular: 400;
+  --sp-font-weight-medium: 500;
+  --sp-font-weight-semibold: 600;
+  --sp-font-weight-bold: 700;
+
+  --sp-text-xs: 0.75rem;     /* .fs--2 */
+  --sp-text-sm: 0.875rem;    /* .fs--1, inputs */
+  --sp-text-md: 1rem;        /* .fs--0, body */
+  --sp-text-lg: 1.25rem;     /* fs-5, Heading 3 */
+  --sp-text-xl: 1.5rem;      /* fs-4, Heading 2 */
+  --sp-text-2xl: 2rem;       /* fs-2, Heading 1, auth title */
+  --sp-text-3xl: 3rem;       /* display-5, hero */
+  --sp-leading-tight: 1.2;
+  --sp-leading-body: 1.5;
+  --sp-leading-relaxed: 1.6;
+
+  /* ---------- Spacing (Bootstrap scale: 1 = 0.25rem ... 5 = 3rem) ---------- */
+  --sp-space-0: 0;
+  --sp-space-1: 0.25rem;
+  --sp-space-2: 0.5rem;
+  --sp-space-3: 1rem;
+  --sp-space-4: 1.5rem;
+  --sp-space-5: 3rem;
+  --sp-gutter: 1.5rem;
+
+  /* ---------- Radius ---------- */
+  --sp-radius-input: 8px;
+  --sp-radius-sm: 0.5rem;
+  --sp-radius-md: 1rem;      /* cards, images */
+  --sp-radius-hero: 20px;
+  --sp-radius-image: 12px;
+  --sp-radius-lg: 2rem;      /* big content boxes, cookie bar */
+  --sp-radius-pill: 24px;
+  --sp-radius-full: 50%;
+
+  /* ---------- Shadow ---------- */
+  --sp-shadow-card: 0 4px 10px rgb(0 0 0 / 0.1);
+  --sp-shadow-image: 0 4px 6px rgb(0 0 0 / 0.1);
+  --sp-shadow-bar: 0 -2px 10px rgb(0 0 0 / 0.2);
+  --sp-shadow-modal: 0 10px 30px rgb(0 0 0 / 0.3);
+  --sp-shadow-sm: 0 0.125rem 0.25rem rgb(0 0 0 / 0.075);
+
+  /* ---------- Motion ---------- */
+  --sp-duration-fast: 0.2s;
+  --sp-duration: 0.3s;
+  --sp-ease: ease-in-out;
+
+  /* ---------- Layers ---------- */
+  --sp-z-dropdown: 1000;
+  --sp-z-cookie-bar: 1000;
+  --sp-z-overlay: 1050;
+  --sp-z-modal: 1055;
+  --sp-z-toast: 1090;
+
+  /* ---------- Layout (Bootstrap container widths) ---------- */
+  --sp-container-sm: 540px;
+  --sp-container-md: 720px;
+  --sp-container-lg: 960px;
+  --sp-container-xl: 1140px;
+  --sp-container-xxl: 1320px;
+  --sp-header-height: 4rem;
+
+  /* ---------- Focus ---------- */
+  --sp-focus-ring: 2px solid var(--sp-color-primary);
+  --sp-focus-offset: 2px;
+}
+
+/*
+ * Breakpoints (CSS variables cannot be used inside @media):
+ *   sm 576px · md 768px · lg 992px · xl 1200px · xxl 1400px
+ * Design targets from the spec: 390 (mobile), 768 (tablet), 1440 (desktop); verify 320 too.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sp-duration-fast: 0s;
+    --sp-duration: 0s;
+  }
+}

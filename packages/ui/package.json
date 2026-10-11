@@ -1,0 +1,14 @@
+{
+  "name": "@selfplan/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./nuxt.config.ts",
+  "dependencies": {
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxt/icon": "^2.5.1",
+    "@iconify-json/fa6-solid": "^1.2.0",
+    "@iconify-json/fa6-regular": "^1.2.0",
+    "@iconify-json/fa6-brands": "^1.2.0"
+  }
+}

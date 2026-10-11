@@ -1,0 +1,68 @@
+/* Minimal reboot (replaces Bootstrap's reboot) + typography defaults. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--sp-font-body);
+  font-weight: var(--sp-font-weight-regular);
+  font-size: 16px;
+  line-height: var(--sp-leading-body);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+}
+
+body {
+  margin: 0;
+  color: var(--sp-color-text);
+  background: var(--sp-color-bg);
+  text-align: left;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 var(--sp-space-2);
+  font-weight: var(--sp-font-weight-medium);
+  line-height: var(--sp-leading-tight);
+}
+
+p { margin: 0 0 var(--sp-space-3); }
+ul, ol { margin: 0 0 var(--sp-space-3); padding-left: 2rem; }
+img, svg { vertical-align: middle; }
+img { max-width: 100%; height: auto; }
+button, input, select, textarea { font: inherit; color: inherit; margin: 0; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+hr { border: 0; border-top: 1px solid var(--sp-color-line); margin: var(--sp-space-3) 0; }
+table { border-collapse: collapse; caption-side: bottom; }
+small { font-size: 0.875em; }
+strong, b { font-weight: var(--sp-font-weight-bold); }
+
+a {
+  color: var(--sp-color-primary);
+  text-decoration: underline;
+}
+a:hover { color: var(--sp-color-primary-hover); }
+
+:focus-visible {
+  outline: var(--sp-focus-ring);
+  outline-offset: var(--sp-focus-offset);
+}
+
+[hidden] { display: none !important; }
+
+/* Skip link for keyboard users */
+.sp-skip-link {
+  position: absolute;
+  left: var(--sp-space-3);
+  top: -4rem;
+  z-index: var(--sp-z-toast);
+  padding: var(--sp-space-2) var(--sp-space-3);
+  background: var(--sp-color-bg);
+  border-radius: var(--sp-radius-sm);
+  box-shadow: var(--sp-shadow-card);
+}
+.sp-skip-link:focus { top: var(--sp-space-3); }

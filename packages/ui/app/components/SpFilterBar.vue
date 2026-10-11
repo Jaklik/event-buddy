@@ -3,15 +3,20 @@
  * Search/filter panel (Filter): tinted background, radius 1rem, transparent inner fields with muted icons,
  * round 40px submit button (full-width on mobile). Wrap a form; fields are SpFilterField.
  */
-defineProps<{ submitLabel?: string }>()
+const props = defineProps<{ submitLabel?: string; action?: string }>()
 const emit = defineEmits<{ submit: [] }>()
+// With `action` the form is a plain GET navigation (works without JS); otherwise the parent handles submit.
+function onSubmit(e: Event) {
+  if (!props.action) e.preventDefault()
+  emit('submit')
+}
 </script>
 
 <template>
-  <form class="sp-filter" role="search" @submit.prevent="emit('submit')">
+  <form class="sp-filter" role="search" :action="props.action" :method="props.action ? 'get' : undefined" @submit="onSubmit">
     <div class="sp-filter__fields"><slot /></div>
-    <SpButton type="submit" circle class="sp-filter__submit" :label="submitLabel ?? 'Hledat'">
-      <SpIcon name="fa6-solid:magnifying-glass" /><span class="sp-filter__submit-text">{{ submitLabel ?? 'Hledat' }}</span>
+    <SpButton type="submit" circle class="sp-filter__submit" :label="props.submitLabel ?? 'Hledat'">
+      <SpIcon name="fa6-solid:magnifying-glass" /><span class="sp-filter__submit-text">{{ props.submitLabel ?? 'Hledat' }}</span>
     </SpButton>
   </form>
 </template>

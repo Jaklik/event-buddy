@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /** One field inside SpFilterBar: leading icon, small label, borderless control. Select when `options` is given. */
-defineProps<{ label: string; icon?: string; type?: string; options?: { value: string; label: string }[]; placeholder?: string }>()
+defineProps<{ label: string; name?: string; icon?: string; type?: string; options?: { value: string; label: string }[]; placeholder?: string }>()
 const model = defineModel<string>({ default: '' })
 const id = useId()
 </script>
@@ -10,10 +10,10 @@ const id = useId()
     <SpIcon v-if="icon" :name="icon" class="sp-filter-field__icon" />
     <div class="sp-filter-field__main">
       <label :for="id" class="sp-filter-field__label">{{ label }}</label>
-      <select v-if="options" :id="id" v-model="model" class="sp-filter-field__control">
+      <select v-if="options" :id="id" v-model="model" :name="name" class="sp-filter-field__control">
         <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
-      <input v-else :id="id" v-model="model" class="sp-filter-field__control" :type="type ?? 'text'" :placeholder="placeholder" />
+      <input v-else :id="id" v-model="model" :name="name" class="sp-filter-field__control" :type="type ?? 'text'" :placeholder="placeholder" />
     </div>
   </div>
 </template>

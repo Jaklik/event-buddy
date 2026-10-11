@@ -1,27 +1,53 @@
 <script setup lang="ts">
-// Only modules that actually exist are listed (spec: no dead links; unfinished modules say "Připravujeme").
+import { categories, eventTypes } from '~/data/home'
+
+// Main navigation per Homepage spec §3. All modules launch together (Migrace §1), so the full menu is the target state.
 const nav = [
   { label: 'Dodavatelé', to: '/dodavatele' },
-  { label: 'Koordinace', to: '/koordinace' },
-  { label: 'Recenze', to: '/recenze' },
-  { label: 'Styleguide', to: '/styleguide' },
+  { label: 'Plánování', to: '/planovac-akci' },
+  { label: 'Inspirace', to: '/inspirace' },
+  { label: 'Bazar', to: '/bazar' },
+  { label: 'Poradna', to: '/poradna' },
+  { label: 'Pro dodavatele', to: '/pro-dodavatele' },
 ]
+
+const footerColumns = [
+  { title: 'Dodavatelé', links: categories.slice(0, 6).map((c) => ({ label: c.label, to: `/dodavatele?category=${c.code}` })) },
+  { title: 'Typy akcí', links: eventTypes },
+  {
+    title: 'Kontakt',
+    links: [
+      { label: 'Služby SelfPlan (koordinace)', to: '/koordinace' },
+      { label: 'Pro dodavatele', to: '/pro-dodavatele' },
+      { label: 'Nahlásit problém / navrhnout funkci', to: '/zpetna-vazba' },
+    ],
+  },
+  {
+    title: 'Informace',
+    links: [
+      { label: 'Obchodní podmínky', to: '/obchodni-podminky' },
+      { label: 'Ochrana osobních údajů', to: '/ochrana-osobnich-udaju' },
+      { label: 'Pravidla obsahu', to: '/pravidla-obsahu' },
+      { label: 'Nastavení cookies', action: 'cookies' as const },
+    ],
+  },
+]
+function openCookies() {
+  // wired to the consent module (CMP) later
+}
 </script>
 
 <template>
   <div class="layout">
     <SpHeader :items="nav">
       <template #actions>
-        <SpHeaderAction href="tel:+420000000000" icon="fa6-regular:comment">Kontakt</SpHeaderAction>
         <SpHeaderAction to="/prihlaseni" icon="fa6-regular:user">Přihlásit se</SpHeaderAction>
+        <SpHeaderAction to="/registrace" icon="fa6-regular:circle-user">Registrovat se</SpHeaderAction>
       </template>
     </SpHeader>
     <main id="main" class="layout__main"><slot /></main>
-    <SpFooter copyright="© SelfPlan. Všechna práva vyhrazena.">
-      <NuxtLink to="/ochrana-osobnich-udaju">Ochrana osobních údajů</NuxtLink>
-      <NuxtLink to="/obchodni-podminky">Obchodní podmínky</NuxtLink>
-      <button type="button">Nastavení cookies</button>
-    </SpFooter>
+    <SpFooterNav :columns="footerColumns" @cookies="openCookies" />
+    <SpFooter copyright="© SelfPlan. Všechna práva vyhrazena." />
   </div>
 </template>
 

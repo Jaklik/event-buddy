@@ -2,6 +2,12 @@ export default defineNuxtConfig({
   extends: ['../../packages/ui'],
   compatibilityDate: '2026-10-01',
   devtools: { enabled: true },
+  runtimeConfig: {
+    public: {
+      // Canonical production origin; override per environment with NUXT_PUBLIC_SITE_URL.
+      siteUrl: 'https://www.selfplan.cz',
+    },
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'cs' },

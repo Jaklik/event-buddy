@@ -14,7 +14,10 @@
     "dev:api": "pnpm --filter @selfplan/api dev",
     "up": "docker compose up --build",
     "down": "docker compose down",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "check:secrets": "bash scripts/check-secrets.sh",
+    "check:secrets:selftest": "bash scripts/check-secrets.selftest.sh",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

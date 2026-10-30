@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Zapnutí: git config core.hooksPath .githooks (provede se samo při pnpm install, viz skript "prepare").
+exec "$(git rev-parse --show-toplevel)/scripts/check-secrets.sh" --staged

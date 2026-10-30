@@ -33,8 +33,45 @@ export const envSchema = z.object({
 
   RATE_LIMIT_GLOBAL_PER_MIN: z.coerce.number().int().positive().default(300),
   RATE_LIMIT_AUTH_PER_MIN: z.coerce.number().int().positive().default(10),
+}).superRefine((e, ctx) => {
+  // Chybové hlášky záměrně neobsahují hodnoty proměnných, aby secrets neunikly do logů.
+  const fail = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
+
+  for (const origin of e.CORS_ORIGIN.split(',').map((o) => o.trim())) {
+    if (!isOrigin(origin)) {
+      fail('CORS_ORIGIN', 'každý origin musí mít tvar schéma://host[:port] bez cesty a lomítka na konci; hvězdička není povolena');
+    }
+  }
+
+  if (e.NODE_ENV !== 'production') return;
+
+  const db = parseUrl(e.DATABASE_URL);
+  if (!db) return;
+  const password = decodeURIComponent(db.password);
+  if (['postgres', 'root', 'admin'].includes(db.username)) {
+    fail('DATABASE_URL', 'v produkci se aplikace nesmí připojovat pod účtem postgres, root ani admin');
+  }
+  if (password.length < 24 || WEAK_PASSWORDS.has(password.toLowerCase())) {
+    fail('DATABASE_URL', 'v produkci musí mít heslo databáze alespoň 24 znaků a nesmí být výchozí (openssl rand -hex 24)');
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;
+
+const WEAK_PASSWORDS = new Set(['selfplan', 'postgres', 'password', 'changeme', 'secret', 'test']);
+
+function parseUrl(value: string): URL | undefined {
+  try {
+    return new URL(value);
+  } catch {
+    return undefined;
+  }
+}
+
+// Origin je přesně schéma://host[:port]. Hvězdička s cookie (credentials) nikdy není bezpečná.
+function isOrigin(value: string): boolean {
+  const url = parseUrl(value);
+  return url !== undefined && ['http:', 'https:'].includes(url.protocol) && url.origin === value;
+}
 
 export const env: Env = envSchema.parse(process.env);

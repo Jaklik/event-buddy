@@ -3,6 +3,9 @@
 # Zatím bez domény a bez veřejného přístupu: porty web a api jsou vázané na 127.0.0.1
 # a otevírají se SSH tunelem. PostgreSQL nemá publikovaný žádný port.
 # Reverse proxy s HTTPS (Caddy) přibude s doménou.
+#
+# Každé službě se předávají jen proměnné, které potřebuje. Nikdy nespouštěj `docker compose config`
+# bez --no-interpolate a jeho výstup nikam nevkládej: vypisuje hodnoty secrets.
 name: selfplan-prod
 
 services:
@@ -13,15 +16,19 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-selfplan}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?nastav POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-selfplan}
+      DB_MIGRATOR_PASSWORD: ${DB_MIGRATOR_PASSWORD:?nastav DB_MIGRATOR_PASSWORD}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?nastav DB_APP_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Role se vytvoří jen při prvním startu s prázdným svazkem (viz docker/postgres/roles.sql).
+      - ./docker/postgres/roles.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 3s
       retries: 10
 
-  # Jednorázová úloha: aplikuje migrace a skončí. API startuje až po jejím úspěšném doběhnutí.
+  # Jednorázová úloha: aplikuje migrace pod rolí migrator a skončí. API startuje až po jejím doběhnutí.
   migrate:
     build:
       context: .
@@ -30,7 +37,7 @@ services:
     restart: "no"
     command: ["node_modules/.bin/prisma", "migrate", "deploy"]
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-selfplan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-selfplan}
+      DATABASE_URL: postgresql://selfplan_migrator:${DB_MIGRATOR_PASSWORD}@postgres:5432/${POSTGRES_DB:-selfplan}
     depends_on:
       postgres: { condition: service_healthy }
 
@@ -43,7 +50,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-selfplan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-selfplan}
+      # Role app smí jen číst a zapisovat data, schéma měnit nemůže.
+      DATABASE_URL: postgresql://selfplan_app:${DB_APP_PASSWORD}@postgres:5432/${POSTGRES_DB:-selfplan}
       CORS_ORIGIN: ${CORS_ORIGIN:?nastav CORS_ORIGIN}
       # Výchozí je true. Přes http (SSH tunel) nastav false; s HTTPS vrať true.
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}

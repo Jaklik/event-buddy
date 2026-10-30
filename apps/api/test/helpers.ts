@@ -1,5 +1,6 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
+import { PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
@@ -7,6 +8,7 @@ import { Clock } from '../src/common/clock';
 import { APP_CONFIG, type AppConfig, loadAppConfig } from '../src/config/app-config';
 import { env } from '../src/config/env';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { TEST_ADMIN_DATABASE_URL } from './test-env';
 
 export const BASE_TIME = new Date('2026-03-01T10:00:00.000Z');
 export const PASSWORD = 'correct horse battery staple';
@@ -72,8 +74,12 @@ export async function createTestApp(overrides: ConfigOverrides = {}): Promise<Te
   return { app, clock, cfg, prisma: app.get(PrismaService), close: () => app.close() };
 }
 
-export async function resetDb(prisma: PrismaService): Promise<void> {
-  await prisma.$executeRawUnsafe(
+// Aplikační role nesmí TRUNCATE, proto se data mezi testy mažou správcovským připojením.
+let adminClient: PrismaClient | undefined;
+
+export async function resetDb(_prisma?: PrismaService): Promise<void> {
+  adminClient ??= new PrismaClient({ datasources: { db: { url: TEST_ADMIN_DATABASE_URL } } });
+  await adminClient.$executeRawUnsafe(
     'TRUNCATE "AuthEvent", "SessionToken", "Session", "AuthIdentity", "User" RESTART IDENTITY CASCADE',
   );
 }

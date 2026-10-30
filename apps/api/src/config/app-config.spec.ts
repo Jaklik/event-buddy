@@ -35,6 +35,63 @@ describe('výchozí konfigurace je bezpečná', () => {
   });
 });
 
+describe('produkční kontroly konfigurace', () => {
+  const STRONG = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718';
+  const url = (user: string, password: string) => `postgresql://${user}:${password}@postgres:5432/selfplan`;
+  const production = (DATABASE_URL: string, extra: Record<string, string> = {}) =>
+    parse({ NODE_ENV: 'production', DATABASE_URL, ...extra });
+
+  it('přijme omezenou roli s dlouhým náhodným heslem', () => {
+    expect(() => production(url('selfplan_app', STRONG))).not.toThrow();
+  });
+
+  it('odmítne krátké a výchozí heslo databáze', () => {
+    for (const password of ['selfplan', 'postgres', 'password', 'short-password', 'x'.repeat(23)]) {
+      expect(() => production(url('selfplan_app', password)), password).toThrow();
+    }
+  });
+
+  it('odmítne účty postgres, root a admin', () => {
+    for (const user of ['postgres', 'root', 'admin']) {
+      expect(() => production(url(user, STRONG)), user).toThrow();
+    }
+  });
+
+  it('chybová hláška neobsahuje heslo ani adresu databáze', () => {
+    const secret = 'kratkeHeslo12345'; // záměrně příliš krátké, aby kontrola selhala a vypsala hlášku
+    let message = '';
+    try {
+      production(url('selfplan_app', secret));
+    } catch (err) {
+      message = String(err instanceof Error ? err.message : err);
+    }
+    expect(message).not.toBe('');
+    expect(message).not.toContain(secret);
+    expect(message).not.toContain('postgres:5432');
+  });
+
+  it('mimo produkci výchozí heslo projde (vývoj a testy)', () => {
+    expect(() => parse({ NODE_ENV: 'development', DATABASE_URL: url('selfplan', 'selfplan') })).not.toThrow();
+    expect(() => parse({ NODE_ENV: 'test', DATABASE_URL: url('selfplan', 'selfplan') })).not.toThrow();
+  });
+});
+
+describe('kontrola CORS_ORIGIN', () => {
+  it('odmítne hvězdičku, cestu, lomítko na konci a neznámé schéma', () => {
+    for (const value of ['*', 'https://app.example.cz/', 'https://app.example.cz/path', 'ftp://app.example.cz', 'app.example.cz', 'null']) {
+      expect(() => parse({ CORS_ORIGIN: value }), value).toThrow();
+    }
+  });
+
+  it('jeden špatný origin v seznamu znehodnotí celý seznam', () => {
+    expect(() => parse({ CORS_ORIGIN: 'https://a.example.cz,*' })).toThrow();
+  });
+
+  it('přijme platné originy včetně portu', () => {
+    expect(() => parse({ CORS_ORIGIN: 'http://localhost:3100, https://www.selfplan.cz' })).not.toThrow();
+  });
+});
+
 describe('konfigurace', () => {
   it('bez Secure se cookie nepředřazuje prefix __Host-', () => {
     const cfg = loadAppConfig(parse({ SESSION_COOKIE_SECURE: 'false' }));

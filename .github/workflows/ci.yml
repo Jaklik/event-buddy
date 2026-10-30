@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Týdně znovu: nové zranitelnosti se objevují i bez změn kódu.
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+# Žádná práva navíc. Workflow z pull requestů z forků nemá přístup k secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Secrets, typecheck a testy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: selfplan
+          POSTGRES_PASSWORD: selfplan
+          POSTGRES_DB: selfplan
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U selfplan -d selfplan"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Správcovská adresa testovací databáze; testy si samy vytvoří role a schéma (apps/api/test/global-setup.ts).
+      TEST_DATABASE_URL: postgresql://selfplan:selfplan@localhost:5432/selfplan_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Kontrola secrets
+        run: |
+          bash scripts/check-secrets.sh
+          bash scripts/check-secrets.selftest.sh
+
+      - name: Příprava pnpm a Node
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm --filter @selfplan/api test
+
+  audit:
+    name: Audit závislostí
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      # Výsledek se vyhodnocuje bránou, ne návratovým kódem auditu (ten selže i na nálezech ve webovém toolchainu).
+      - run: pnpm audit --prod --json > audit.json || true
+      - run: node scripts/audit-gate.mjs audit.json
+
+  deploy-scripts:
+    name: Skripty nasazení na server
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Skripty běží na serveru jako root, proto se testují v čistém Debianu (stejný systém jako server).
+      - run: bash infra/server/test-deploy.sh
+
+  images:
+    name: Smoke test a sken image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Sestaví produkční image, spustí postgres, migrace, api a web na náhodných heslech a portech a ověří je.
+      - name: Smoke test produkčního stacku
+        run: bash scripts/smoke-prod.sh
+
+      # Image z předchozího kroku zůstávají (smoke test maže jen kontejnery a svazky).
+      - name: Trivy
+        run: |
+          for image in selfplan-smoke-api selfplan-smoke-web; do
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+              aquasec/trivy@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c \
+              image --quiet --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed "$image"
+          done

@@ -1,0 +1,58 @@
+#!/bin/bash
+# Nasazení aplikace na server. Běží jako root přes sudo (jen s jedním argumentem: SHA commitu), tar archiv s kódem
+# čte ze standardního vstupu. Instaluje se do /usr/local/sbin (vlastník root, nezapisovatelné pro ostatní).
+# Nikdy nevypisuje obsah souboru .env ani výstup `docker compose config`.
+set -euo pipefail
+umask 022
+
+APP_DIR=/opt/selfplan
+COMPOSE=(docker compose -f docker-compose.prod.yml)
+MAX_ARCHIVE_BYTES=$((200 * 1024 * 1024))
+
+fail() { echo "CHYBA: $*" >&2; logger -t selfplan-deploy "chyba: $*"; exit 1; }
+
+[ "$#" -eq 1 ] && [[ "$1" =~ ^[0-9a-f]{40}$ ]] || fail "očekávám jediný argument: 40místný SHA commitu"
+sha="$1"
+
+# Jedno nasazení najednou.
+exec 9>/var/lock/selfplan-deploy.lock
+flock -n 9 || fail "jiné nasazení právě běží"
+
+stage="$(mktemp -d /var/tmp/selfplan-deploy.XXXXXX)"
+trap 'rm -rf "$stage"' EXIT
+chmod 700 "$stage"
+
+echo "== Přijímám archiv commitu $sha"
+head -c "$MAX_ARCHIVE_BYTES" | tar -x --no-same-owner --no-same-permissions -C "$stage" || fail "archiv se nepodařilo rozbalit"
+
+# Kontrola obsahu archivu.
+[ -f "$stage/docker-compose.prod.yml" ] || fail "v archivu chybí docker-compose.prod.yml"
+[ -f "$stage/docker/postgres/roles.sql" ] || fail "v archivu chybí docker/postgres/roles.sql"
+[ -z "$(find "$stage" -type l -print -quit)" ] || fail "archiv obsahuje symbolické odkazy"
+if find "$stage" \( -name '.env' -o -name '.env.*' \) ! -name '*.example' -print -quit | grep -q .; then
+  fail "archiv obsahuje soubor .env"
+fi
+
+# Konfigurace na serveru: musí existovat, mít přísná práva a vyplněná hesla (hodnoty se nevypisují).
+env_file="$APP_DIR/.env"
+[ -f "$env_file" ] || fail "na serveru chybí $env_file (vytvoř ho podle .env.prod.example)"
+[ "$(stat -c '%a' "$env_file")" = "600" ] || fail "$env_file musí mít práva 600"
+for name in POSTGRES_PASSWORD DB_MIGRATOR_PASSWORD DB_APP_PASSWORD; do
+  grep -qE "^${name}=.{24,}\$" "$env_file" || fail "v $env_file chybí nebo je příliš krátká hodnota $name"
+done
+
+echo "== Aktualizuji soubory v $APP_DIR"
+# Bez -p, -o a -g, aby se nezměnila práva složky; .env a .deployed-commit zůstávají nedotčené.
+rsync -rltE --delete --exclude='/.env' --exclude='/.deployed-commit' "$stage"/ "$APP_DIR"/
+echo "$sha" > "$APP_DIR/.deployed-commit"
+
+cd "$APP_DIR"
+echo "== Sestavuji a spouštím služby"
+"${COMPOSE[@]}" up -d --build --wait --remove-orphans
+
+echo "== Stav služeb"
+"${COMPOSE[@]}" ps --format 'table {{.Service}}\t{{.Status}}'
+
+docker image prune -f >/dev/null
+logger -t selfplan-deploy "nasazeno $sha"
+echo "== Hotovo: $sha"

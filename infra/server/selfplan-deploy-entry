@@ -1,0 +1,14 @@
+#!/bin/bash
+# Vynucený příkaz klíče pro nasazování z GitHub Actions (authorized_keys: restrict,command="...").
+# Klient smí poslat jen 40místný identifikátor commitu; tar archiv s kódem přichází na standardním vstupu.
+# Instaluje se do /usr/local/bin a spouští pod uživatelem ghdeploy, který nemá žádný jiný přístup než
+# povolené spuštění /usr/local/sbin/selfplan-deploy přes sudo (viz sudoers v setup-deploy-user.sh).
+set -eu
+
+sha="${SSH_ORIGINAL_COMMAND:-}"
+if ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "Neplatný identifikátor commitu." >&2
+  exit 2
+fi
+
+exec sudo -n /usr/local/sbin/selfplan-deploy "$sha"

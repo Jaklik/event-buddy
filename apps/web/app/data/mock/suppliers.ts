@@ -1,58 +1,54 @@
 import type { Availability, Category, PriceLevel, Review, Supplier } from './types'
 
-export const categories: Category[] = [
-  { code: 'venue_and_equipment', label: 'Místo konání', icon: 'fa6-solid:landmark' },
-  { code: 'photography_and_video', label: 'Foto a video', icon: 'fa6-solid:camera' },
-  { code: 'catering_and_dining', label: 'Catering', icon: 'fa6-solid:utensils' },
-  { code: 'decoration_and_flowers', label: 'Dekorace a květiny', icon: 'fa6-solid:seedling' },
-  { code: 'music_and_entertainment', label: 'Hudba a zábava', icon: 'fa6-solid:music' },
-  { code: 'fashion_and_beauty', label: 'Móda a krása', icon: 'fa6-solid:wand-magic-sparkles' },
-  { code: 'organization_and_coordination', label: 'Organizace a koordinace', icon: 'fa6-solid:clipboard-list' },
-  { code: 'printing_and_invitations', label: 'Tisk a pozvánky', icon: 'fa6-solid:envelope-open-text' },
-]
-export const categoryLabel = (code: string) => categories.find((c) => c.code === code)?.label ?? code
+import { taxonomy } from './taxonomy'
+
+export const categories: Category[] = taxonomy.map((c) => ({ code: c.code, label: c.label, icon: c.icon }))
+export const categoryLabel = (code: string) => taxonomy.find((c) => c.code === code)?.label ?? code
 
 export const regions = ['Praha', 'Středočeský kraj', 'Jihočeský kraj', 'Plzeňský kraj', 'Pardubický kraj', 'Jihomoravský kraj', 'Moravskoslezský kraj']
 
 const IMG = ['suppliers-jumbotron', 'home-jumbotron', 'home-suppliers', 'home-inspiration', 'home-gifts', 'home-planner', 'home-marketplace', 'session-new'].map((n) => `/dev/${n}.jpg`)
 const imgs = (i: number) => [0, 1, 2, 3, 4].map((k) => IMG[(i + k) % IMG.length]!)
 
-interface Seed { name: string; cat: string; region: string; city: string; km: number; summary: string; price: PriceLevel | null; rating: number | null; reviews: number; cap?: [number, number]; vip?: boolean; sponsored?: boolean; verified?: boolean }
+type Attrs = Supplier['attrs']
+interface Seed { name: string; cat: string; sub: string; region: string; city: string; km: number; summary: string; price: PriceLevel | null; rating: number | null; reviews: number; cap?: [number, number]; vip?: boolean; sponsored?: boolean; verified?: boolean; noPhoto?: boolean; attrs?: Attrs }
 
 const seeds: Seed[] = [
-  { name: 'Zámek Loučeň (ukázka)', cat: 'venue_and_equipment', region: 'Středočeský kraj', city: 'Loučeň', km: 32, summary: 'Romantický zámek s parkem pro svatby od jara do podzimu.', price: '$$$', rating: 4.9, reviews: 120, cap: [20, 200], vip: true },
-  { name: 'Statek Čapí hnízdo (ukázka)', cat: 'venue_and_equipment', region: 'Středočeský kraj', city: 'Pecka', km: 45, summary: 'Moderní statek s kouzelným dvorem a ubytováním.', price: '$$', rating: 4.8, reviews: 98, cap: [30, 150] },
-  { name: 'Vila Lanna (ukázka)', cat: 'venue_and_equipment', region: 'Praha', city: 'Praha 6', km: 12, summary: 'Elegantní vila pro menší a střední svatby s výhledem na Vltavu.', price: '$$$', rating: 4.7, reviews: 85, cap: [20, 100], sponsored: true },
-  { name: 'Pivovar U Lípy (ukázka)', cat: 'venue_and_equipment', region: 'Jihočeský kraj', city: 'Třeboň', km: 118, summary: 'Rustikální sál a zahrada pro oslavy až 120 hostů.', price: '$', rating: 4.5, reviews: 41, cap: [20, 120] },
-  { name: 'Foto Světlo – Marie Kovářová (ukázka)', cat: 'photography_and_video', region: 'Praha', city: 'Praha 2', km: 8, summary: 'Přirozené svatební reportáže bez pózování.', price: '$$', rating: 4.9, reviews: 64 },
-  { name: 'Studio Dvě oči (ukázka)', cat: 'photography_and_video', region: 'Jihomoravský kraj', city: 'Brno', km: 205, summary: 'Fotografie i video v jednom balíčku, dron v ceně.', price: '$$$', rating: 4.6, reviews: 37, vip: true },
-  { name: 'Kamera Vlk (ukázka)', cat: 'photography_and_video', region: 'Středočeský kraj', city: 'Kolín', km: 55, summary: 'Svatební filmy a krátké highlighty.', price: '$$', rating: null, reviews: 0 },
-  { name: 'Catering Chuť (ukázka)', cat: 'catering_and_dining', region: 'Praha', city: 'Praha 9', km: 15, summary: 'Rautové i servírované menu, vlastní personál.', price: '$$', rating: 4.7, reviews: 52, sponsored: true },
-  { name: 'Svatební dorty od Elišky (ukázka)', cat: 'catering_and_dining', region: 'Pardubický kraj', city: 'Přelouč', km: 78, summary: 'Dorty na míru a candy bary.', price: '$', rating: 4.9, reviews: 29 },
-  { name: 'Květiny z Louky (ukázka)', cat: 'decoration_and_flowers', region: 'Středočeský kraj', city: 'Říčany', km: 25, summary: 'Svatební kytice, výzdoba obřadu a stolů.', price: '$$', rating: 4.8, reviews: 46 },
-  { name: 'Dekorace Zlatá nit (ukázka)', cat: 'decoration_and_flowers', region: 'Plzeňský kraj', city: 'Plzeň', km: 95, summary: 'Půjčovna dekorací a stylingu pro svatby a oslavy.', price: '$$', rating: 4.4, reviews: 18 },
-  { name: 'DJ Matyáš (ukázka)', cat: 'music_and_entertainment', region: 'Praha', city: 'Praha 4', km: 10, summary: 'Hudba na přání, ozvučení obřadu v ceně.', price: '$', rating: 4.6, reviews: 33 },
-  { name: 'Kapela Šest strun (ukázka)', cat: 'music_and_entertainment', region: 'Jihomoravský kraj', city: 'Znojmo', km: 230, summary: 'Živá kapela pro svatby a plesy.', price: '$$', rating: 4.8, reviews: 22 },
-  { name: 'Salon Perla (ukázka)', cat: 'fashion_and_beauty', region: 'Praha', city: 'Praha 1', km: 5, summary: 'Půjčovna svatebních šatů a doplňků.', price: '$$$', rating: 4.7, reviews: 71 },
-  { name: 'Vizáž Anna (ukázka)', cat: 'fashion_and_beauty', region: 'Středočeský kraj', city: 'Mladá Boleslav', km: 60, summary: 'Svatební líčení a účesy, výjezd na místo.', price: '$$', rating: 4.9, reviews: 58 },
-  { name: 'Svatební agentura Den D (ukázka)', cat: 'organization_and_coordination', region: 'Praha', city: 'Praha 3', km: 9, summary: 'Koordinace svatebního dne i kompletní plánování.', price: '$$$', rating: 4.8, reviews: 44, vip: true },
-  { name: 'Tiskárna Papír a Pero (ukázka)', cat: 'printing_and_invitations', region: 'Pardubický kraj', city: 'Pardubice', km: 85, summary: 'Svatební oznámení, menu a popisky na stůl.', price: '$', rating: 4.5, reviews: 26 },
-  { name: 'Mobilní fotokoutek Klik (ukázka)', cat: 'music_and_entertainment', region: 'Moravskoslezský kraj', city: 'Ostrava', km: 290, summary: 'Fotokoutek s rekvizitami a okamžitým tiskem.', price: null, rating: null, reviews: 0, verified: false },
+  { name: 'Zámek Loučeň (ukázka)', cat: 'venue_and_equipment', sub: 'venue_rentals', region: 'Středočeský kraj', city: 'Loučeň', km: 32, summary: 'Romantický zámek s parkem pro svatby od jara do podzimu.', price: '$$$', rating: 4.9, reviews: 120, cap: [20, 200], vip: true, attrs: { capacity: 200, beds: 40, rain: true, rainCapacity: 120, ceremonyInside: true, ceremonyOutside: true, danceSpace: true, privateRental: true, externalCatering: true, kitchen: true, dishesOnSite: 'own', parking: true, accessible: true, projector: true, sound: true, internet: true } },
+  { name: 'Statek Čapí hnízdo (ukázka)', cat: 'venue_and_equipment', sub: 'venue_rentals', region: 'Středočeský kraj', city: 'Pecka', km: 45, summary: 'Moderní statek s kouzelným dvorem a ubytováním.', price: '$$', rating: 4.8, reviews: 98, cap: [30, 150], attrs: { capacity: 150, beds: 20, rain: true, rainCapacity: 40, ceremonyOutside: true, danceSpace: true, externalCatering: true, dishesOnSite: 'can', parking: true } },
+  { name: 'Vila Lanna (ukázka)', cat: 'venue_and_equipment', sub: 'venue_rentals', region: 'Praha', city: 'Praha 6', km: 12, summary: 'Elegantní vila pro menší a střední svatby s výhledem na Vltavu.', price: '$$$', rating: 4.7, reviews: 85, cap: [20, 100], sponsored: true, attrs: { capacity: 100, beds: 0, ceremonyInside: true, ceremonyOutside: true, danceSpace: true, ownCatering: true, parking: false } },
+  { name: 'Pivovar U Lípy (ukázka)', cat: 'venue_and_equipment', sub: 'venue_rentals', region: 'Jihočeský kraj', city: 'Třeboň', km: 118, summary: 'Rustikální sál a zahrada pro oslavy až 120 hostů.', price: '$', rating: 4.5, reviews: 41, cap: [20, 120], attrs: { capacity: 120, beds: 0, rain: true, rainCapacity: 120, externalCatering: true, kitchen: true, dishesOnSite: 'own', parking: true, accessible: true, playground: true } },
+  { name: 'Foto Světlo – Marie Kovářová (ukázka)', cat: 'photography_and_video', sub: 'photographers', region: 'Praha', city: 'Praha 2', km: 8, summary: 'Přirozené svatební reportáže bez pózování.', price: '$$', rating: 4.9, reviews: 64 },
+  { name: 'Studio Dvě oči (ukázka)', cat: 'photography_and_video', sub: 'videographers', region: 'Jihomoravský kraj', city: 'Brno', km: 205, summary: 'Fotografie i video v jednom balíčku, dron v ceně.', price: '$$$', rating: 4.6, reviews: 37, vip: true },
+  { name: 'Kamera Vlk (ukázka)', cat: 'photography_and_video', sub: 'videographers', region: 'Středočeský kraj', city: 'Kolín', km: 55, summary: 'Svatební filmy a krátké highlighty.', price: '$$', rating: null, reviews: 0, noPhoto: true },
+  { name: 'Reels z akce – Tvůrce (ukázka)', cat: 'photography_and_video', sub: 'content_creators', region: 'Praha', city: 'Praha 5', km: 10, summary: 'Krátká videa a příběhy pro sociální sítě přímo z vaší akce.', price: null, rating: null, reviews: 0 },
+  { name: 'Catering Chuť (ukázka)', cat: 'catering_and_dining', sub: 'catering_firms', region: 'Praha', city: 'Praha 9', km: 15, summary: 'Rautové i servírované menu, vlastní personál.', price: '$$', rating: 4.7, reviews: 52, sponsored: true, attrs: { dishes: 'can', service: true, barService: true, diet: ['vegetarian', 'gluten'] } },
+  { name: 'Svatební dorty od Elišky (ukázka)', cat: 'catering_and_dining', sub: 'pastry_chefs', region: 'Pardubický kraj', city: 'Přelouč', km: 78, summary: 'Dorty na míru a candy bary.', price: '$', rating: 4.9, reviews: 29 },
+  { name: 'Burger Truck Motor (ukázka)', cat: 'catering_and_dining', sub: 'food_trucks', region: 'Praha', city: 'Praha 8', km: 11, summary: 'Food truck s burgery a hranolky na oslavy a firemní akce.', price: null, rating: null, reviews: 0, attrs: { cuisine: 'burger' } },
+  { name: 'Květiny z Louky (ukázka)', cat: 'decoration_and_flowers', sub: 'florists', region: 'Středočeský kraj', city: 'Říčany', km: 25, summary: 'Svatební kytice, výzdoba obřadu a stolů.', price: '$$', rating: 4.8, reviews: 46 },
+  { name: 'Dekorace Zlatá nit (ukázka)', cat: 'decoration_and_flowers', sub: 'decorators', region: 'Plzeňský kraj', city: 'Plzeň', km: 95, summary: 'Půjčovna dekorací a stylingu pro svatby a oslavy.', price: '$$', rating: 4.4, reviews: 18, noPhoto: true },
+  { name: 'DJ Matyáš (ukázka)', cat: 'music_and_entertainment', sub: 'djs', region: 'Praha', city: 'Praha 4', km: 10, summary: 'Hudba na přání, ozvučení obřadu v ceně.', price: '$', rating: 4.6, reviews: 33, attrs: { moderation: true, ownSound: true, lights: false } },
+  { name: 'Kapela Šest strun (ukázka)', cat: 'music_and_entertainment', sub: 'bands', region: 'Jihomoravský kraj', city: 'Znojmo', km: 230, summary: 'Živá kapela pro svatby a plesy.', price: '$$', rating: 4.8, reviews: 22, attrs: { genre: 'pop' } },
+  { name: 'Mobilní fotokoutek Klik (ukázka)', cat: 'music_and_entertainment', sub: 'photo_booths', region: 'Moravskoslezský kraj', city: 'Ostrava', km: 290, summary: 'Fotokoutek s rekvizitami a okamžitým tiskem.', price: null, rating: null, reviews: 0, verified: false, attrs: { instantPrint: true, digitalShare: true } },
+  { name: 'Salon Perla (ukázka)', cat: 'fashion_and_beauty', sub: 'attire', region: 'Praha', city: 'Praha 1', km: 5, summary: 'Půjčovna svatebních šatů a doplňků.', price: '$$$', rating: 4.7, reviews: 71 },
+  { name: 'Vizáž Anna (ukázka)', cat: 'fashion_and_beauty', sub: 'makeup_hair', region: 'Středočeský kraj', city: 'Mladá Boleslav', km: 60, summary: 'Svatební líčení a účesy, výjezd na místo.', price: '$$', rating: 4.9, reviews: 58 },
+  { name: 'Tiskárna Papír a Pero (ukázka)', cat: 'printing_and_invitations', sub: 'printers', region: 'Pardubický kraj', city: 'Pardubice', km: 85, summary: 'Svatební oznámení, menu a popisky na stůl.', price: '$', rating: 4.5, reviews: 26 },
 ]
 
-const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
 export const suppliers: Supplier[] = seeds.map((s, i) => ({
   id: i + 1,
   slug: `${i + 1}-${slugify(s.name)}`,
   name: s.name,
   categoryCode: s.cat,
+  subcategoryCode: s.sub,
   region: s.region,
   city: s.city,
   distanceKm: s.km,
   summary: s.summary,
   description: `${s.summary} Toto je ukázkový popis dodavatele pro náhled rozhraní. Skutečná data se doplní z databáze. Dodavatel působí primárně v regionu ${s.region} a je ochoten dojíždět i dále po dohodě.`,
-  images: imgs(i),
+  images: s.noPhoto ? [] : imgs(i),
   rating: s.rating,
   reviewCount: s.reviews,
   priceLevel: s.price,
@@ -74,6 +70,9 @@ export const suppliers: Supplier[] = seeds.map((s, i) => ({
   website: `https://example-${i + 1}.cz`,
   social: { instagram: 'https://instagram.com/', facebook: 'https://facebook.com/' },
   googleRatingUrl: s.rating ? 'https://www.google.com/maps' : undefined,
+  attrs: s.attrs ?? {},
+  eventTypes: s.name.startsWith('Pivovar') ? ['narozeniny', 'oslava', 'firemni'] : s.cat === 'printing_and_invitations' ? ['svatba'] : ['svatba', 'narozeniny', 'oslava', 'firemni'],
+  demo: true,
 }))
 
 /* ---------- availability (deterministic fake) ---------- */

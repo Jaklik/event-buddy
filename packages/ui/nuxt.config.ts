@@ -16,7 +16,8 @@ export default defineNuxtConfig({
     // Self-hosted at build time (GDPR, performance) instead of fonts.googleapis.com.
     families: [
       { name: 'Public Sans', provider: 'google', global: true, weights: [300, 400, 500, 600, 700], styles: ['normal', 'italic'] },
-      { name: 'Barlow', provider: 'google', global: true, weights: [300, 400, 500, 600], styles: ['normal', 'italic'] },
+      // Sentient (accent headings, brand manual p.16) from Fontshare, self-hosted at build. Verify the license before launch.
+      { name: 'Sentient', provider: 'fontshare', global: true, weights: [400, 500, 700], styles: ['normal', 'italic'] },
     ],
   },
   icon: {

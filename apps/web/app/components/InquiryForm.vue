@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import { attrsFor } from '~/data/mock/taxonomy'
 /**
  * Inquiry form (individual inquiry to one supplier profile). Spec: bound to a concrete profile, date prefilled
  * from the catalogue filter, verified e-mail required to send, non-binding. Dummy submit for the frontend phase.
  */
-const props = defineProps<{ supplierName: string; supplierId: number; date?: string }>()
+const props = defineProps<{ supplierName: string; supplierId: number; date?: string; eventType?: string; place?: string; guests?: string; category?: string; sub?: string }>()
 const emit = defineEmits<{ sent: [] }>()
 const { loggedIn } = useMockSession()
 const route = useRoute()
 
-const form = reactive({ date: props.date ?? '', eventType: 'svatba', place: '', guests: '', message: '' })
+// Prefilled from the catalogue filters so the customer does not retype them (spec §36).
+const form = reactive({ date: props.date ?? '', eventType: props.eventType || 'svatba', place: props.place ?? '', guests: props.guests ?? '', rainCapacity: '', message: '' })
+const extra = reactive<Record<string, boolean>>({})
+const isVenue = computed(() => props.category === 'venue_and_equipment')
+const inquiryAttrs = computed(() => attrsFor(props.category, props.sub, 'inquiry'))
 const errors = reactive<Record<string, string>>({})
 const done = ref(false)
 const eventTypes = [
@@ -43,11 +48,17 @@ function submit() {
     <SpSelect v-model="form.eventType" label="Typ akce" :options="eventTypes" />
     <SpInput v-model="form.place" label="Místo konání" required :error="errors.place" />
     <SpInput v-model="form.guests" label="Orientační počet hostů" type="number" />
+    <SpInput v-if="isVenue" v-model="form.rainCapacity" label="Požadovaná kapacita krytých prostor pro případ deště (nepovinné)" type="number" hint="Kolik hostů se musí vejít do krytých prostor." />
+    <fieldset v-if="inquiryAttrs.length" class="inquiry__extra"><legend>Požadavky na catering</legend>
+      <SpCheckbox v-for="a in inquiryAttrs" :key="a.key" v-model="extra[a.key]" :label="a.label" />
+    </fieldset>
     <SpInput v-model="form.message" label="Popis poptávky" multiline :rows="4" required :error="errors.message" />
     <SpButton type="submit" block>Odeslat poptávku</SpButton>
   </form>
 </template>
 
 <style scoped>
+.inquiry__extra { margin: 0 0 var(--sp-space-3); padding: 0; border: 0; }
+.inquiry__extra legend { padding: 0; margin-bottom: var(--sp-space-2); font-size: var(--sp-text-sm); font-weight: var(--sp-font-weight-bold); }
 .inquiry__note { margin: 0 0 var(--sp-space-3); font-size: var(--sp-text-sm); color: var(--sp-color-text-secondary); }
 </style>

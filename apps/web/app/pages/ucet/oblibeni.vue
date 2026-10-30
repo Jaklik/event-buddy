@@ -19,7 +19,7 @@ const list = computed(() => suppliers.filter((s) => (favorites.ids.value.length 
     <SpAlert v-if="demo.length" variant="info" class="sp-mb-3">Zatím nemáte nic uloženo. Zobrazujeme ukázku; srdíčko u dodavatele ho přidá do oblíbených.</SpAlert>
     <SpEmpty v-if="!list.length" title="Nic tu zatím není" text="Označte dodavatele srdíčkem a najdete je tady."><SpButton to="/dodavatele">Najít dodavatele</SpButton></SpEmpty>
     <div v-else class="sp-grid sp-grid--md-2 sp-grid--lg-3">
-      <SpSupplierCard v-for="s in list" :key="s.id" :to="`/dodavatele/${s.slug}`" :name="s.name" :image="s.images[0]" :category="categoryLabel(s.categoryCode)" :location="`${s.city}, ${s.region}`" :summary="s.summary" :rating="s.rating ?? undefined" :rating-count="s.reviewCount" :price-level="s.priceLevel" :favorite="favorites.has(s.id) || demo.includes(s.id)" @toggle-favorite="favorites.toggle(s.id)" />
+      <SpSupplierCard v-for="s in list" :key="s.id" :to="`/dodavatele/${s.slug}`" :name="s.name" :image="s.images[0]" :category="categoryLabel(s.categoryCode)" :location="`${s.city}, ${s.region}`" :summary="s.summary" :rating="s.rating ?? undefined" :rating-count="s.reviewCount" :price-level="s.priceLevel" :demo="s.demo" :favorite="favorites.has(s.id) || demo.includes(s.id)" @toggle-favorite="favorites.toggle(s.id)" />
     </div>
   </div>
 </template>

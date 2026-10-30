@@ -6,7 +6,7 @@ defineProps<{ title: string; text?: string }>()
 <template>
   <header class="sp-page-header">
     <div>
-      <SpHeading :level="1" class="sp-page-header__title">{{ title }}</SpHeading>
+      <SpHeading :level="2" as="h1" class="sp-page-header__title">{{ title }}</SpHeading>
       <p v-if="text" class="sp-page-header__text">{{ text }}</p>
     </div>
     <div class="sp-page-header__actions"><slot /></div>

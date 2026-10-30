@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { categories, categoryItems, tools, devFixtures } from '~/data/home'
+import { categoryItems, tools, devFixtures } from '~/data/home'
+import { taxonomy } from '~/data/mock/taxonomy'
+import { regionOptions } from '~/repositories/suppliers'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -26,8 +28,11 @@ const campaigns = preview ? devFixtures.campaigns : []
 const articles = preview ? devFixtures.articles : []
 const references = preview ? devFixtures.references : []
 
-const searchCategories = [{ value: '', label: 'Všechny kategorie' }, ...categories.map((c) => ({ value: c.code, label: c.label }))]
-const search = reactive({ category: '', location: '', date: '' })
+// Search inputs respect the approved catalogue: public categories and regions only; the date is optional and never prefilled.
+const searchCategories = [{ value: '', label: 'Všechny kategorie' }, ...taxonomy.map((c) => ({ value: c.code, label: c.label }))]
+const searchRegions = [{ value: '', label: 'Celá ČR' }, ...regionOptions.map((r) => ({ value: r, label: r }))]
+const searchEvents = [{ value: '', label: 'Všechny typy akcí' }, { value: 'svatba', label: 'Svatba' }, { value: 'narozeniny', label: 'Narozeniny a oslavy' }, { value: 'firemni', label: 'Firemní akce' }]
+const search = reactive({ category: '', region: '', typ: '', date: '' })
 </script>
 
 <template>
@@ -36,18 +41,22 @@ const search = reactive({ category: '', location: '', date: '' })
       title="Naplánujte svou událost jednoduše se SelfPlanem"
       text="Najděte dodavatele, inspiraci a nástroje pro přípravu svatby, oslavy i firemní akce na jednom místě."
     >
-      <SpButton to="/dodavatele" size="lg">Najít dodavatele</SpButton>
-      <SpButton to="/planovac-akci" variant="brand" size="lg">Začít plánovat událost</SpButton>
+      <SpButton to="/dodavatele" size="lg" class="home__cta">Najít dodavatele</SpButton>
+      <SpButton to="/planovac-akci" variant="brand" size="lg" class="home__cta">Začít plánovat událost</SpButton>
       <template #media>
-        <img src="/dev/home-jumbotron.jpg" alt="" width="420" height="420" fetchpriority="high" />
+        <picture class="home__hero">
+          <source media="(max-width: 767.98px)" srcset="/images/hero-event-800.jpg" width="800" height="533">
+          <img src="/images/hero-event.jpg" alt="Hosté na letní zahradní oslavě při západu slunce u prostřeného stolu s květinami" width="1536" height="1024" fetchpriority="high" decoding="async">
+        </picture>
       </template>
     </SpHero>
 
     <div class="sp-container home__search">
       <SpFilterBar action="/dodavatele" submit-label="Najít dodavatele">
         <SpFilterField v-model="search.category" name="category" label="Co hledáte?" icon="fa6-regular:folder" :options="searchCategories" />
-        <SpFilterField v-model="search.date" name="date" label="Datum akce" icon="fa6-regular:calendar" type="date" />
-        <SpFilterField v-model="search.location" name="location" label="Lokalita" icon="fa6-solid:location-dot" placeholder="Celá ČR" />
+        <SpFilterField v-model="search.typ" name="typ" label="Typ akce" icon="fa6-regular:calendar-check" :options="searchEvents" />
+        <SpFilterField v-model="search.region" name="region" label="Lokalita" icon="fa6-solid:location-dot" :options="searchRegions" />
+        <SpFilterField v-model="search.date" name="date" label="Datum akce (nepovinné)" icon="fa6-regular:calendar" type="date" />
       </SpFilterBar>
     </div>
 
@@ -98,6 +107,11 @@ const search = reactive({ category: '', location: '', date: '' })
 
 <style scoped>
 .home__search { margin-bottom: var(--sp-space-3); }
+/* Two equal CTAs: same height, similar width, typography and contrast; full width on mobile. */
+.home__cta { flex: 1 1 15rem; max-width: 20rem; min-width: 0; }
+@media (max-width: 575.98px) { .home__cta { flex-basis: 100%; max-width: none; } }
+.home__hero { display: block; width: 100%; background: var(--sp-color-bg-warm); border-radius: var(--sp-radius-image); box-shadow: var(--sp-shadow-image); overflow: hidden; }
+.home__hero img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 0; box-shadow: none; }
 .home__ads { padding-block: var(--sp-space-3); }
 .home__more { font-size: var(--sp-text-sm); text-align: center; text-decoration: none; }
 .home__more:hover { text-decoration: underline; }

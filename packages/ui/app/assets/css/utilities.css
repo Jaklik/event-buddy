@@ -4,8 +4,10 @@
 .sp-container {
   width: 100%;
   margin-inline: auto;
-  padding-inline: calc(var(--sp-gutter) / 2);
+  padding-inline: var(--sp-page-pad);
 }
+@media (min-width: 576px) { .sp-container { --sp-page-pad: 1.25rem; } }
+@media (min-width: 992px) { .sp-container { --sp-page-pad: 1.5rem; } }
 @media (min-width: 576px) { .sp-container { max-width: var(--sp-container-sm); } }
 @media (min-width: 768px) { .sp-container { max-width: var(--sp-container-md); } }
 @media (min-width: 992px) { .sp-container { max-width: var(--sp-container-lg); } }

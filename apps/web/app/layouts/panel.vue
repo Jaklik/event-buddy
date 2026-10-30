@@ -55,6 +55,8 @@ const navs: Record<string, { title: string; items: SideNavItem[] }> = {
       { label: 'Recenze', to: '/admin/recenze', icon: 'fa6-regular:star' },
       { label: 'Obsah a SEO', to: '/admin/obsah', icon: 'fa6-regular:newspaper' },
       { label: 'Inspirace a bazar', to: '/admin/moderace', icon: 'fa6-regular:images', badge: 5 },
+      { label: 'Kategorie', to: '/admin/kategorie', icon: 'fa6-solid:sitemap' },
+      { label: 'Parametry a filtry', to: '/admin/parametry', icon: 'fa6-solid:filter' },
       { label: 'Koordinace', to: '/admin/koordinace', icon: 'fa6-solid:clipboard-list' },
       { label: 'Bezpečnost', to: '/admin/bezpecnost', icon: 'fa6-solid:shield-halved' },
     ],

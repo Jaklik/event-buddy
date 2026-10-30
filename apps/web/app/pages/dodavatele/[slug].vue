@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { availabilityFor, categoryLabel } from '~/data/mock/suppliers'
+import { attrsFor, catByCode, subLabel, triLabels } from '~/data/mock/taxonomy'
 import { getRelatedSuppliers, getSupplier, getSupplierReviews } from '~/repositories/suppliers'
 type DayState = 'free' | 'busy' | 'unknown' | 'tentative'
 
@@ -41,12 +42,36 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 
 const sections = computed(() => [
   { id: 'prehled', label: 'Přehled' },
+  { id: 'parametry', label: 'Parametry' },
   { id: 'sluzby', label: 'Služby a ceny' },
   { id: 'dostupnost', label: 'Dostupnost' },
   { id: 'recenze', label: 'Recenze' },
   { id: 'kontakt', label: 'Kontakt' },
 ])
 const inquiryOpen = ref(false)
+
+// Structured parameters grouped by topic. Unknown values are never shown as "Ne" (spec §42).
+function fmt(d: ReturnType<typeof attrsFor>[number], v: unknown): string | null {
+  if (v === undefined || v === null) return null
+  if (d.type === 'bool') return v === true ? 'Ano' : v === false ? 'Ne' : null
+  if (d.type === 'tri') return typeof v === 'string' ? (triLabels[v] ?? null) : null
+  if (d.type === 'number') return typeof v === 'number' ? `${v}${d.unit ? ` ${d.unit}` : ''}` : null
+  if (d.type === 'select') return d.options?.find((o) => o.value === v)?.label ?? String(v)
+  if (d.type === 'multi') return Array.isArray(v) && v.length ? v.map((x) => d.options?.find((o) => o.value === x)?.label ?? x).join(', ') : null
+  return null
+}
+const paramGroups = computed(() => {
+  const groups: Record<string, { label: string; value: string }[]> = {}
+  for (const d of attrsFor(s.categoryCode, s.subcategoryCode).filter((x) => x.scope !== 'inquiry')) {
+    if (d.key === 'rainCapacity') continue
+    let value = fmt(d, s.attrs[d.key])
+    if (d.key === 'rain' && value === 'Ano') value = typeof s.attrs.rainCapacity === 'number' ? `Ano, kapacita ${s.attrs.rainCapacity} osob` : 'Ano, kapacita není uvedena'
+    if (value) (groups[d.group] ??= []).push({ label: d.label, value })
+  }
+  return groups
+})
+const hasParams = computed(() => Object.keys(paramGroups.value).length > 0)
+const qs = (k: string) => (typeof route.query[k] === 'string' ? (route.query[k] as string) : '')
 const money = (n: number) => new Intl.NumberFormat('cs', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 }).format(n)
 const avg = computed(() => (s.rating ? s.rating.toFixed(1).replace('.', ',') : null))
 </script>
@@ -54,14 +79,16 @@ const avg = computed(() => (s.rating ? s.rating.toFixed(1).replace('.', ',') : n
 <template>
   <div class="detail">
     <div class="sp-container">
-      <nav class="detail__crumbs" aria-label="Drobečková navigace"><NuxtLink to="/">Domů</NuxtLink> / <NuxtLink to="/dodavatele">Dodavatelé</NuxtLink> / <NuxtLink :to="`/dodavatele?category=${s.categoryCode}`">{{ categoryLabel(s.categoryCode) }}</NuxtLink> / <span>{{ s.name }}</span></nav>
-      <SpGallery :images="s.images" :alt="s.name" />
+      <nav class="detail__crumbs" aria-label="Drobečková navigace"><NuxtLink to="/">Domů</NuxtLink> / <NuxtLink to="/dodavatele">Dodavatelé</NuxtLink> / <NuxtLink :to="`/dodavatele/kategorie/${catByCode(s.categoryCode)?.slug}`">{{ categoryLabel(s.categoryCode) }}</NuxtLink> / <span>{{ s.name }}</span></nav>
+      <SpGallery v-if="s.images.length" :images="s.images" :alt="s.name" />
+      <div v-else class="detail__nophoto" role="img" aria-label="Fotografie dodavatele zatím nejsou k dispozici"><SpIcon name="fa6-solid:camera-retro" size="2.5rem" /><span>Fotografie bude doplněna</span></div>
 
       <header class="detail__head">
         <div class="detail__title">
           <SpHeading :level="1">{{ s.name }}</SpHeading>
           <p class="detail__meta">
-            <SpBadge>{{ categoryLabel(s.categoryCode) }}</SpBadge>
+            <SpBadge>{{ subLabel(s.categoryCode, s.subcategoryCode) ?? categoryLabel(s.categoryCode) }}</SpBadge>
+            <SpBadge v-if="s.demo" variant="warning">Ukázka</SpBadge>
             <span v-if="s.verified" class="detail__verified"><SpIcon name="fa6-solid:circle-check" /> Ověřený dodavatel</span>
             <SpBadge v-if="s.vip" variant="neutral">VIP</SpBadge>
             <span v-if="s.rating" class="detail__rating"><SpStars :value="s.rating" /> <strong>{{ avg }}</strong> ({{ s.reviewCount }} recenzí)</span>
@@ -93,6 +120,17 @@ const avg = computed(() => (s.rating ? s.rating.toFixed(1).replace('.', ',') : n
             <li><SpIcon name="fa6-solid:language" /> {{ s.languages.join(', ') }}</li>
             <li v-if="s.priceLevel"><SpIcon name="fa6-solid:tag" /> Cenová úroveň {{ s.priceLevel }} <span class="sp-text-muted">(podle modelové zakázky)</span></li>
           </ul>
+        </section>
+
+        <section v-if="hasParams" id="parametry" class="detail__section">
+          <SpHeading :level="2">Parametry</SpHeading>
+          <div class="detail__params">
+            <div v-for="(items, g) in paramGroups" :key="g" class="detail__pg">
+              <h3>{{ g }}</h3>
+              <dl><template v-for="i in items" :key="i.label"><dt>{{ i.label }}</dt><dd>{{ i.value }}</dd></template></dl>
+            </div>
+          </div>
+          <p class="sp-text-xs sp-text-muted">Neuvedené parametry nezobrazujeme. Neuvedeno neznamená, že dodavatel službu neposkytuje.</p>
         </section>
 
         <section id="sluzby" class="detail__section">
@@ -157,12 +195,12 @@ const avg = computed(() => (s.rating ? s.rating.toFixed(1).replace('.', ',') : n
     <section v-if="related.length" class="sp-container detail__related">
       <SpHeading :level="2">Mohlo by se vám líbit</SpHeading>
       <div class="sp-grid sp-grid--md-3">
-        <SpSupplierCard v-for="r in related" :key="r.id" :to="`/dodavatele/${r.slug}`" :name="r.name" :image="r.images[0]" :category="categoryLabel(r.categoryCode)" :location="`${r.city}, ${r.region}`" :summary="r.summary" :rating="r.rating ?? undefined" :rating-count="r.reviewCount" :price-level="r.priceLevel" :favorite="favorites.has(r.id)" @toggle-favorite="favorites.toggle(r.id)" />
+        <SpSupplierCard v-for="r in related" :key="r.id" :to="`/dodavatele/${r.slug}`" :name="r.name" :image="r.images[0]" :category="categoryLabel(r.categoryCode)" :location="`${r.city}, ${r.region}`" :summary="r.summary" :rating="r.rating ?? undefined" :rating-count="r.reviewCount" :price-level="r.priceLevel" :demo="r.demo" :favorite="favorites.has(r.id)" @toggle-favorite="favorites.toggle(r.id)" />
       </div>
     </section>
 
     <SpModal v-model="inquiryOpen" :title="`Poptávka: ${s.name}`">
-      <InquiryForm :supplier-name="s.name" :supplier-id="s.id" :date="date" />
+      <InquiryForm :supplier-name="s.name" :supplier-id="s.id" :date="date" :event-type="qs('typ')" :place="qs('region')" :guests="qs('hostu')" :category="s.categoryCode" :sub="s.subcategoryCode" />
     </SpModal>
   </div>
 </template>
@@ -178,6 +216,13 @@ const avg = computed(() => (s.rating ? s.rating.toFixed(1).replace('.', ',') : n
 .detail__cta { display: flex; flex-direction: column; gap: var(--sp-space-2); min-width: 16rem; }
 .detail__body { display: grid; gap: var(--sp-space-4); padding-top: var(--sp-space-4); align-items: start; }
 .detail__section { padding-bottom: var(--sp-space-4); margin-bottom: var(--sp-space-4); border-bottom: 1px solid var(--sp-color-line); scroll-margin-top: 4rem; }
+.detail__nophoto { display: grid; place-content: center; justify-items: center; gap: var(--sp-space-2); min-height: 16rem; color: var(--sp-color-brand-strong); background: var(--sp-color-bg-warm); border-radius: var(--sp-radius-md); }
+.detail__params { display: grid; gap: var(--sp-space-3); }
+@media (min-width: 768px) { .detail__params { grid-template-columns: 1fr 1fr; } }
+.detail__pg h3 { margin: 0 0 var(--sp-space-1); font-size: var(--sp-text-md); font-family: var(--sp-font-body); font-weight: var(--sp-font-weight-bold); }
+.detail__pg dl { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem var(--sp-space-3); margin: 0; font-size: var(--sp-text-sm); }
+.detail__pg dt { color: var(--sp-color-text-secondary); }
+.detail__pg dd { margin: 0; font-weight: var(--sp-font-weight-medium); text-align: right; }
 .detail__facts, .detail__contact { display: grid; gap: var(--sp-space-2); margin: 0; padding: 0; list-style: none; }
 .detail__packages { display: grid; gap: var(--sp-space-3); margin-bottom: var(--sp-space-3); }
 .package__name { margin: 0; font-family: var(--sp-font-heading); font-size: var(--sp-text-lg); font-weight: var(--sp-font-weight-regular); }

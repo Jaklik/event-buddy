@@ -17,6 +17,7 @@ export interface Supplier {
   slug: string
   name: string
   categoryCode: string
+  subcategoryCode: string
   region: string
   city: string
   distanceKm: number
@@ -38,6 +39,11 @@ export interface Supplier {
   website: string
   social: { instagram?: string; facebook?: string }
   googleRatingUrl?: string
+  /** Typed attribute values. A MISSING key means "not provided" and is never shown as "No". */
+  attrs: Record<string, boolean | number | string | string[]>
+  eventTypes: string[]
+  /** Demo data: labelled "Ukázka" and never presented as a real offer or rating. */
+  demo: boolean
 }
 
 export interface Review {

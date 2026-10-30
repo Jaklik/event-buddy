@@ -132,7 +132,7 @@ function onKey(e: KeyboardEvent) {
 .sp-carousel__image { width: 100%; height: 100%; object-fit: cover; }
 .sp-carousel__caption { position: absolute; inset: auto 0 0 0; padding: var(--sp-space-3) var(--sp-space-4) var(--sp-space-5); color: #fff; background: rgb(0 0 0 / 0.5); }
 .sp-carousel__tag { display: inline-block; margin-bottom: var(--sp-space-1); padding: 0.1rem 0.5rem; font-size: var(--sp-text-xs); font-weight: var(--sp-font-weight-semibold); background: rgb(255 255 255 / 0.2); border-radius: 0.25rem; }
-.sp-carousel__title { margin: 0; font-family: var(--sp-font-heading); font-weight: var(--sp-font-weight-light); font-size: var(--sp-text-xl); }
+.sp-carousel__title { margin: 0; font-family: var(--sp-font-heading); font-weight: var(--sp-font-weight-medium); font-size: var(--sp-text-xl); }
 .sp-carousel__text { margin: var(--sp-space-1) 0 var(--sp-space-2); }
 .sp-carousel__cta { color: #fff; border-color: #fff; }
 

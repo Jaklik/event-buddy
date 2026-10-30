@@ -57,7 +57,8 @@ const attrs = computed(() => {
   align-items: center;
   justify-content: center;
   gap: var(--sp-space-2);
-  padding: 0.375rem 0.75rem;
+  min-height: var(--sp-control-h);
+  padding: 0.5rem 1.25rem;
   font-size: var(--sp-text-md);
   font-weight: var(--sp-font-weight-semibold);
   line-height: var(--sp-leading-body);
@@ -81,8 +82,8 @@ const attrs = computed(() => {
 }
 
 /* Sizes */
-.sp-btn--sm { padding: 0.25rem 0.5rem; font-size: var(--sp-text-sm); }
-.sp-btn--lg { padding: 0.5rem 1rem; font-size: var(--sp-text-lg); }
+.sp-btn--sm { min-height: 2.25rem; padding: 0.25rem 0.9rem; font-size: var(--sp-text-sm); }
+.sp-btn--lg { min-height: 3.25rem; padding: 0.65rem 1.75rem; font-size: var(--sp-text-md); }
 .sp-btn--block { display: flex; width: 100%; }
 
 /* cta */
@@ -126,8 +127,8 @@ const attrs = computed(() => {
 
 /* circle */
 .sp-btn--circle {
-  width: 40px;
-  height: 40px;
+  width: var(--sp-control-h);
+  height: var(--sp-control-h);
   padding: 0;
   border-radius: var(--sp-radius-full);
 }

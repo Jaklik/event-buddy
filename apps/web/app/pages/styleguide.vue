@@ -84,8 +84,7 @@ const shareItems = [
     <header class="sg__intro">
       <SpHeading :level="1">Design system SelfPlan</SpHeading>
       <p class="sp-text-secondary">
-        Převzato 1:1 z původního Rails projektu (barvy, fonty, tvary, komponenty). Jediné odchylky: tmavý text na béžových
-        plochách (kontrast WCAG AA) a pojmenování dříve natvrdo zapsaných hodnot. Tokeny jsou v
+        Podle „SelfPlan 2.0 – Designový systém v1“ (brand manuál EventBuddy 2024): Beige #E2CDBA, UCLA Blue #506E92, Dark Blue #1B2530 (místo černé), Coconut #90633C, Public Sans + Sentient. Odvozené odstíny, stavové barvy, stupnice a rozměry komponent jsou návrh a mají otestovaný kontrast. Tokeny jsou v
         <code>packages/ui/app/assets/css/tokens.css</code>.
       </p>
       <nav class="sg__toc" aria-label="Obsah styleguidu">
@@ -124,16 +123,15 @@ const shareItems = [
     <!-- TYPE -->
     <section id="type" class="sg__section">
       <SpHeading :level="2">Typografie</SpHeading>
-      <p class="sp-text-secondary">Nadpisy: <strong>Barlow 300</strong>. Vše ostatní: <strong>Public Sans</strong>. Fonty jsou self-hostované při buildu.</p>
+      <p class="sp-text-secondary">Nadpisy a claimy: <strong>Sentient</strong> (Fontshare, licenci před spuštěním ověřit). Vše ostatní: <strong>Public Sans</strong>. Fonty jsou self-hostované při buildu. H1 32–56 px, H2 24–36 px, H3 19–24 px, text 16 px, drobný text min. 14 px.</p>
       <div class="sg__stack">
-        <SpHeading level="display">Display – Vše pro vaše události</SpHeading>
-        <SpHeading :level="1">Nadpis 1 – 2 rem</SpHeading>
-        <SpHeading :level="2">Nadpis 2 – 1,5 rem</SpHeading>
-        <SpHeading :level="3">Nadpis 3 – 1,25 rem</SpHeading>
+        <SpHeading level="display">Display / H1 – Vše pro vaše události</SpHeading>
+        <SpHeading :level="2">Nadpis H2 – 24 až 36 px</SpHeading>
+        <SpHeading :level="3">Nadpis H3 – 19 až 24 px</SpHeading>
         <p>Základní text 1 rem / 400. Najděte ověřené dodavatele, naplánujte každý detail a nechte se inspirovat.</p>
-        <p class="sp-text-sm">Malý text 0,875 rem – formuláře, popisky.</p>
-        <p class="sp-text-xs sp-text-muted">Drobný text 0,75 rem – nápovědy, štítky.</p>
-        <p><strong>Tučný 700</strong> · <span style="font-weight: 600">Semibold 600 (tlačítka)</span> · <span style="font-weight: 500">Medium 500</span> · <span style="font-weight: 300">Light 300</span></p>
+        <p class="sp-text-sm">Sekundární text 15 px – formuláře, popisky, navigace.</p>
+        <p class="sp-text-xs sp-text-muted">Drobný text 14 px (minimum) – nápovědy, štítky.</p>
+        <p><strong>Tučný 700</strong> · <span style="font-weight: 600">Semibold 600 (tlačítka)</span> · <span style="font-weight: 500">Medium 500</span> · <span style="font-weight: 400">Regular 400</span></p>
         <p><a href="#type">Odkaz v textu</a> · <a href="#type" class="sp-text-strong">Černý odkaz</a> · <span class="sp-text-muted">Tlumený text</span></p>
       </div>
     </section>

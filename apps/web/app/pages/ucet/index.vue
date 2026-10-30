@@ -15,7 +15,7 @@ const doneCount = eventTasks.filter((t) => t.done).length
 const nextTask = eventTasks.filter((t) => !t.done).sort((a, b) => a.due.localeCompare(b.due))[0]
 const unread = notifications.filter((n) => !n.read).length
 const activeInquiries = inquiries.filter((i) => !['odmitnuta', 'uzavrena'].includes(i.status)).length
-const recommended = suppliers.filter((s) => s.categoryCode === 'organization_and_coordination' || s.vip).slice(0, 3)
+const recommended = suppliers.filter((s) => s.vip).slice(0, 3)
 </script>
 
 <template>
@@ -68,7 +68,7 @@ const recommended = suppliers.filter((s) => s.categoryCode === 'organization_and
 
     <h2 class="dash__h2">Doporučení dodavatelé</h2>
     <div class="sp-grid sp-grid--md-3">
-      <SpSupplierCard v-for="s in recommended" :key="s.id" :to="`/dodavatele/${s.slug}`" :name="s.name" :image="s.images[0]" :category="categoryLabel(s.categoryCode)" :location="`${s.city}, ${s.region}`" :summary="s.summary" :rating="s.rating ?? undefined" :rating-count="s.reviewCount" :price-level="s.priceLevel" :favorite="favorites.has(s.id)" @toggle-favorite="favorites.toggle(s.id)" />
+      <SpSupplierCard v-for="s in recommended" :key="s.id" :to="`/dodavatele/${s.slug}`" :name="s.name" :image="s.images[0]" :category="categoryLabel(s.categoryCode)" :location="`${s.city}, ${s.region}`" :summary="s.summary" :rating="s.rating ?? undefined" :rating-count="s.reviewCount" :price-level="s.priceLevel" :demo="s.demo" :favorite="favorites.has(s.id)" @toggle-favorite="favorites.toggle(s.id)" />
     </div>
 
     <p class="dash__help">Potřebujete poradit? <NuxtLink to="/poradna">Poradna</NuxtLink> · <NuxtLink to="/ucet/podpora">Kontaktovat podporu</NuxtLink></p>

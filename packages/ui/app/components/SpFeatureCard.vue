@@ -37,7 +37,7 @@ const tag = computed(() => (props.status === 'live' && props.to ? resolveCompone
 a.sp-feature { padding-bottom: calc(var(--sp-space-3) + 1.25rem); }
 a.sp-feature:hover, a.sp-feature:focus-visible { transform: translateY(-3px); box-shadow: var(--sp-shadow-card); color: inherit; }
 .sp-feature__icon { flex: none; display: grid; place-items: center; width: 3rem; height: 3rem; color: var(--sp-color-brand-strong); background: var(--sp-color-brand-soft); border-radius: var(--sp-radius-sm); }
-.sp-feature__body { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.sp-feature__body { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 .sp-feature__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-space-2); font-weight: var(--sp-font-weight-semibold); }
 .sp-feature__text { font-size: var(--sp-text-sm); color: var(--sp-color-text-secondary); }
 .sp-feature__arrow { position: absolute; right: var(--sp-space-3); bottom: var(--sp-space-3); color: var(--sp-color-text-secondary); }

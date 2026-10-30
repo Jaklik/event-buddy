@@ -1,32 +1,24 @@
 <script setup lang="ts">
-/** Footer (old _footer): hairline top border, copyright left, legal links right. Links are slotted. */
-defineProps<{ copyright: string }>()
+/** Bottom info row: brand, verified operator identification (from one shared config), contact link and copyright. */
+defineProps<{ operator: string; ico: string; contactTo?: string }>()
+const year = new Date().getFullYear()
 </script>
 
 <template>
   <footer class="sp-footer">
     <div class="sp-container sp-footer__bar">
-      <span class="sp-footer__text">{{ copyright }}</span>
-      <nav class="sp-footer__links" aria-label="Právní informace"><slot /></nav>
+      <div class="sp-footer__brand"><img src="/brand/logo.svg" alt="SelfPlan" width="90" height="24"><span>© {{ year }} {{ operator }}, IČO {{ ico }}</span></div>
+      <nav class="sp-footer__links" aria-label="Kontakt"><NuxtLink :to="contactTo ?? '/kontakt'">Kontakt</NuxtLink><slot /></nav>
     </div>
   </footer>
 </template>
 
 <style scoped>
-.sp-footer { margin-top: var(--sp-space-4); border-top: 1px solid var(--sp-color-line); padding-block: var(--sp-space-3); }
-.sp-footer__bar { display: flex; flex-direction: column; align-items: center; gap: var(--sp-space-2); text-align: center; }
-.sp-footer__text { font-size: var(--sp-text-md); }
-.sp-footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-space-2) var(--sp-space-3); }
-.sp-footer__links :deep(a), .sp-footer__links :deep(button) {
-  color: var(--sp-color-text-strong);
-  font-weight: var(--sp-font-weight-regular);
-  text-decoration: none;
-  background: none;
-  border: 0;
-  padding: 0;
-}
-.sp-footer__links :deep(a:hover), .sp-footer__links :deep(button:hover) { text-decoration: underline; }
-@media (min-width: 768px) {
-  .sp-footer__bar { flex-direction: row; justify-content: space-between; }
-}
+.sp-footer { border-top: 1px solid var(--sp-color-line); padding-block: var(--sp-space-3); }
+.sp-footer__bar { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-space-2); font-size: var(--sp-text-sm); }
+.sp-footer__brand { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-space-2) var(--sp-space-3); color: var(--sp-color-text-secondary); }
+.sp-footer__brand img { height: auto; }
+.sp-footer__links { display: flex; flex-wrap: wrap; gap: var(--sp-space-3); }
+.sp-footer__links a { display: inline-flex; align-items: center; min-height: 2.5rem; color: var(--sp-color-primary); }
+@media (min-width: 768px) { .sp-footer__bar { flex-direction: row; align-items: center; justify-content: space-between; } }
 </style>

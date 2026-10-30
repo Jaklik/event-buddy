@@ -57,12 +57,12 @@ export const schedule: ScheduleItem[] = [
 ]
 
 export const inquiries: Inquiry[] = [
-  { id: 1, supplierId: 8, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'nabidka', lastMessage: 'Posíláme nabídku na rautové menu pro 80 osob.', unread: true, budget: 130000 },
+  { id: 1, supplierId: 9, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'nabidka', lastMessage: 'Posíláme nabídku na rautové menu pro 80 osob.', unread: true, budget: 130000 },
   { id: 2, supplierId: 5, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'potvrzena', lastMessage: 'Termín je potvrzen, těšíme se.', unread: false, budget: 48000 },
-  { id: 3, supplierId: 10, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'nova', lastMessage: 'Poptávka odeslána.', unread: false },
-  { id: 4, supplierId: 12, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'vyjednavani', lastMessage: 'Můžeme upravit hrací dobu na 6 hodin?', unread: true },
+  { id: 3, supplierId: 12, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'nova', lastMessage: 'Poptávka odeslána.', unread: false },
+  { id: 4, supplierId: 15, customer: 'Tereza Nováková', eventType: 'Svatba', date: '2027-06-26', place: 'Zámek Loučeň', guests: 80, status: 'vyjednavani', lastMessage: 'Můžeme upravit hrací dobu na 6 hodin?', unread: true },
   { id: 5, supplierId: 14, customer: 'Tereza Nováková', eventType: 'Narozeniny', date: '2026-12-12', place: 'Praha', guests: 35, status: 'odmitnuta', lastMessage: 'Bohužel v tomto termínu nemáme volno.', unread: false },
-  { id: 6, supplierId: 9, customer: 'Tereza Nováková', eventType: 'Narozeniny', date: '2026-12-12', place: 'Praha', guests: 35, status: 'uzavrena', lastMessage: 'Děkujeme za objednávku dortu.', unread: false },
+  { id: 6, supplierId: 10, customer: 'Tereza Nováková', eventType: 'Narozeniny', date: '2026-12-12', place: 'Praha', guests: 35, status: 'uzavrena', lastMessage: 'Děkujeme za objednávku dortu.', unread: false },
 ]
 
 export const messages: ThreadMessage[] = [

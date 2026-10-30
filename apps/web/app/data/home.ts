@@ -7,36 +7,28 @@ interface Slide { id: string | number; image: string; alt: string; title?: strin
  * (spec: no empty placeholders, no invented reviews or campaigns).
  */
 
-/** Top-level supplier categories of the existing SelfPlan taxonomy (db/migrate/…_migrate_categories.rb). */
-export const categories = [
-  { code: 'venue_and_equipment', label: 'Místo konání', icon: 'fa6-solid:landmark' },
-  { code: 'photography_and_video', label: 'Foto a video', icon: 'fa6-solid:camera' },
-  { code: 'catering_and_dining', label: 'Catering', icon: 'fa6-solid:utensils' },
-  { code: 'decoration_and_flowers', label: 'Dekorace a květiny', icon: 'fa6-solid:seedling' },
-  { code: 'music_and_entertainment', label: 'Hudba a zábava', icon: 'fa6-solid:music' },
-  { code: 'fashion_and_beauty', label: 'Móda a krása', icon: 'fa6-solid:wand-magic-sparkles' },
-  { code: 'organization_and_coordination', label: 'Organizace a koordinace', icon: 'fa6-solid:clipboard-list' },
-  { code: 'printing_and_invitations', label: 'Tisk a pozvánky', icon: 'fa6-solid:envelope-open-text' },
-] as const
+import { taxonomy } from './mock/taxonomy'
 
-export const categoryItems: CategoryItem[] = categories.map((c) => ({
-  label: c.label,
-  icon: c.icon,
-  to: `/dodavatele?category=${c.code}`,
-}))
+/**
+ * Homepage categories come from the PUBLIC taxonomy (single source). "Organizace a koordinace" and the cancelled
+ * "Prodejci a trhy" are not public categories; coordination is a separate SelfPlan service. Links go to indexable
+ * category landing pages, never to ad-hoc filter URLs.
+ */
+export const categories = taxonomy
+export const categoryItems: CategoryItem[] = taxonomy.slice(0, 8).map((c) => ({ label: c.label, icon: c.icon, to: `/dodavatele/kategorie/${c.slug}` }))
 
 export const tools = [
   { title: 'Plánovač událostí', text: 'Checklist, rozpočet a harmonogram na jednom místě.', icon: 'fa6-regular:square-check', to: '/planovac-akci' },
   { title: 'Vlastní eventový web', text: 'Web s RSVP pro vaši událost za pár minut.', icon: 'fa6-solid:desktop', to: '/eventovy-web' },
   { title: 'Inspirace', text: 'Skutečné realizace, nápady a trendy.', icon: 'fa6-regular:lightbulb', to: '/inspirace' },
-  { title: 'Bazar', text: 'Prodejte nebo najděte svatební a eventové věci.', icon: 'fa6-solid:bag-shopping', to: '/bazar' },
+  { title: 'Eventový bazar', text: 'Prodejte nebo najděte svatební a eventové věci.', icon: 'fa6-solid:bag-shopping', to: '/bazar' },
   { title: 'Poradna', text: 'Články, tipy, hry, tradice a vzory smluv.', icon: 'fa6-solid:book-open', to: '/poradna' },
 ]
 
 export const eventTypes = [
-  { label: 'Svatby', to: '/dodavatele?event=svatba' },
-  { label: 'Narozeniny a oslavy', to: '/dodavatele?event=oslava' },
-  { label: 'Firemní akce', to: '/dodavatele?event=firemni' },
+  { label: 'Svatby', to: '/dodavatele?typ=svatba' },
+  { label: 'Narozeniny a oslavy', to: '/dodavatele?typ=oslava' },
+  { label: 'Firemní akce', to: '/dodavatele?typ=firemni' },
 ]
 
 /**

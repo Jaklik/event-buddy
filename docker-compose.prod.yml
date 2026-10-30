@@ -1,0 +1,83 @@
+# Produkční build na jednom serveru: `docker compose -f docker-compose.prod.yml up -d --build`.
+# Konfigurace přes ENV (viz .env.prod.example); soubor .env leží jen na serveru a nepatří do gitu.
+# Zatím bez domény a bez veřejného přístupu: porty web a api jsou vázané na 127.0.0.1
+# a otevírají se SSH tunelem. PostgreSQL nemá publikovaný žádný port.
+# Reverse proxy s HTTPS (Caddy) přibude s doménou.
+name: selfplan-prod
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-selfplan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?nastav POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-selfplan}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # Jednorázová úloha: aplikuje migrace a skončí. API startuje až po jejím úspěšném doběhnutí.
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: prod
+    restart: "no"
+    command: ["node_modules/.bin/prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-selfplan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-selfplan}
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-selfplan}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-selfplan}
+      CORS_ORIGIN: ${CORS_ORIGIN:?nastav CORS_ORIGIN}
+      # Výchozí je true. Přes http (SSH tunel) nastav false; s HTTPS vrať true.
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      TRUST_PROXY: ${TRUST_PROXY:-0}
+    ports:
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      postgres: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+    # Obraz node:22-slim nemá curl ani wget, proto sonda běží přes vestavěný fetch v Node.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: prod
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-http://localhost:3100}
+    ports:
+      - "127.0.0.1:3000:3000"
+    # Obraz node:22-slim nemá curl ani wget, proto sonda běží přes vestavěný fetch v Node.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  pgdata:

@@ -10,6 +10,19 @@ export default defineNuxtConfig({
       mock: true,
     },
   },
+  // Základní bezpečnostní hlavičky. HSTS patří na reverzní proxy s HTTPS (Caddy). CSP přijde zvlášť,
+  // protože SSR vkládá inline skripty a bez noncí by byla neúčinná.
+  routeRules: {
+    '/**': {
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=()',
+        'Cross-Origin-Opener-Policy': 'same-origin',
+      },
+    },
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'cs' },

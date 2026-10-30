@@ -1,0 +1,57 @@
+# Popis veřejně dostupných endpointů pro dynamický sken (OWASP ZAP). Psaný ručně, při změně API ho aktualizuj.
+# Cíl http://api:4000 platí uvnitř docker sítě docker-compose.prod.yml; viz apps/api/security/README.md.
+openapi: 3.0.3
+info:
+  title: SelfPlan API (veřejné endpointy)
+  version: 0.0.0
+servers:
+  - url: http://api:4000/api
+paths:
+  /health:
+    get:
+      responses:
+        '200': { description: ok }
+  /auth/register:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, maxLength: 254, example: zap@example.cz }
+                password: { type: string, minLength: 10, maxLength: 128, example: correct horse battery staple }
+      responses:
+        '202': { description: přijato }
+        '400': { description: neplatný vstup }
+  /auth/login:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, maxLength: 254, example: zap@example.cz }
+                password: { type: string, maxLength: 128, example: correct horse battery staple }
+      responses:
+        '200': { description: přihlášen }
+        '401': { description: neplatné přihlašovací údaje }
+  /auth/refresh:
+    post:
+      responses:
+        '204': { description: token rotován }
+        '401': { description: nepřihlášen }
+  /auth/logout:
+    post:
+      responses:
+        '204': { description: odhlášen }
+  /auth/me:
+    get:
+      responses:
+        '200': { description: přihlášený uživatel }
+        '401': { description: nepřihlášen }

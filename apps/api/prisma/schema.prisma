@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+// Jeden univerzální účet; způsoby přihlášení jsou v AuthIdentity (zadání Registrace a přihlášení, §3).
+model User {
+  id              String       @id @default(uuid()) @db.Uuid
+  email           String       @unique // uložený normalizovaně (malá písmena)
+  emailVerifiedAt DateTime?
+  status          UserStatus   @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  identities      AuthIdentity[]
+  sessions        Session[]
+  authEvents      AuthEvent[]
+}
+
+model AuthIdentity {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @db.Uuid
+  provider     AuthProvider
+  providerId   String? // ID u poskytovatele (Google); u LOCAL prázdné
+  passwordHash String? // jen u LOCAL (Argon2id)
+  failedLogins Int          @default(0)
+  lockedUntil  DateTime?
+  createdAt    DateTime     @default(now())
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@unique([provider, providerId])
+}
+
+// Relace přihlášeného zařízení. Platnost se řídí nečinností (idle) a absolutní dobou života.
+model Session {
+  id                String         @id @default(uuid()) @db.Uuid
+  userId            String         @db.Uuid
+  createdAt         DateTime       @default(now())
+  lastSeenAt        DateTime
+  idleExpiresAt     DateTime
+  absoluteExpiresAt DateTime
+  revokedAt         DateTime?
+  revokedReason     String?
+  ip                String?
+  userAgent         String?
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokens            SessionToken[]
+
+  @@index([userId])
+}
+
+// Token relace se rotuje. V DB je jen SHA-256 hash; nahrazený token slouží k detekci opakovaného použití.
+model SessionToken {
+  tokenHash    String    @id
+  sessionId    String    @db.Uuid
+  createdAt    DateTime
+  supersededAt DateTime?
+  session      Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+// Bezpečnostní události bez hesel a tokenů.
+model AuthEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid
+  type      String
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}

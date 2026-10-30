@@ -1,0 +1,55 @@
+# Lokální vývoj: `docker compose up`. Konfigurace přes ENV (viz .env.example).
+name: selfplan
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-selfplan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-selfplan}
+      POSTGRES_DB: ${POSTGRES_DB:-selfplan}
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: dev
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-selfplan}:${POSTGRES_PASSWORD:-selfplan}@postgres:5432/${POSTGRES_DB:-selfplan}
+      CORS_ORIGIN: http://localhost:3000
+      SESSION_COOKIE_SECURE: "false"
+    ports: ["4000:4000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes:
+      - ./apps/api/src:/repo/apps/api/src
+      - ./apps/api/prisma:/repo/apps/api/prisma
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: dev
+    environment:
+      NUXT_PUBLIC_SITE_URL: http://localhost:3000
+      NUXT_PUBLIC_API_URL: http://localhost:4000/api
+    ports: ["3000:3000"]
+    depends_on: [api]
+    volumes:
+      - ./apps/web/app:/repo/apps/web/app
+      - ./apps/web/public:/repo/apps/web/public
+      - ./apps/web/nuxt.config.ts:/repo/apps/web/nuxt.config.ts
+      - ./packages/ui:/repo/packages/ui
+      - /repo/packages/ui/node_modules
+
+volumes:
+  pgdata:

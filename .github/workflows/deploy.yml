@@ -1,0 +1,62 @@
+name: Deploy
+
+# Nasazení na produkční server. Spouští se ručně z větve main a vyžaduje schválení v prostředí "production"
+# (GitHub: Settings → Environments → production → Required reviewers).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read # kontrola výsledku CI pro nasazovaný commit
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Nasazení na produkční server
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    env:
+      # Secrets a proměnné jsou jen v prostředí production. Aplikační secrets (hesla databáze) v GitHubu nejsou,
+      # leží v souboru .env na serveru.
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Ověření, že CI pro tento commit prošlo
+        run: |
+          count="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${GITHUB_SHA}&status=success&per_page=1" --jq '.total_count')"
+          if [ "${count:-0}" -lt 1 ]; then
+            echo "Pro commit ${GITHUB_SHA} nemám úspěšný běh CI. Nasazení se zastavilo." >&2
+            exit 1
+          fi
+
+      - name: Příprava SSH (klíč je omezený na příkaz nasazení)
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Nahrání commitu a spuštění nasazení
+        run: |
+          # Na server se pošle přesný stav commitu (jen sledované soubory); skript na serveru ho nasadí.
+          git archive --format=tar "$GITHUB_SHA" | ssh \
+            -i ~/.ssh/deploy_key \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            "ghdeploy@${DEPLOY_HOST}" "$GITHUB_SHA"
+
+      - name: Úklid klíče
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

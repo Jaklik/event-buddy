@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Akce ve workflow jsou připnuté na commity; Dependabot navrhuje jejich nové verze i s novým commitem.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]

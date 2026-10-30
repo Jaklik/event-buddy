@@ -17,7 +17,9 @@
     "test": "pnpm -r --if-present test",
     "check:secrets": "bash scripts/check-secrets.sh",
     "check:secrets:selftest": "bash scripts/check-secrets.selftest.sh",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "smoke:prod": "bash scripts/smoke-prod.sh",
+    "test:deploy-scripts": "bash infra/server/test-deploy.sh"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
